@@ -13,7 +13,10 @@ requireRole(['student']);
 
 <div class="card">
   <div class="card-header">
-    <h3>📊 Subject-wise Marks Breakdown</h3>
+    <h3 style="display:flex; align-items:center; gap:8px;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary);"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+      Subject-wise Marks Breakdown
+    </h3>
   </div>
   <div class="card-body" id="marks-container">
     <div class="empty-state"><div class="spinner"></div></div>
@@ -28,7 +31,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const container = document.getElementById('marks-container');
   
   if (res.marks.length === 0) {
-    container.innerHTML = '<div class="empty-state"><div class="icon">📊</div><h3>No marks published yet</h3><p>Your marks will appear here once published by your instructors.</p></div>';
+    container.innerHTML = '<div class="empty-state"><div class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-muted);"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></div><h3>No marks published yet</h3><p>Your marks will appear here once published by your instructors.</p></div>';
     return;
   }
   
@@ -52,7 +55,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       <div class="card mb-3" style="box-shadow:none;border:1px solid var(--border-color)">
         <div class="card-header">
           <div>
-            <h3 style="font-size:1rem">${sub.code} — ${sub.name}</h3>
+            <h3 style="font-size:1rem; font-family:\'Inter\', sans-serif;">${sub.code} — ${sub.name}</h3>
           </div>
           <div>
             <span class="badge ${pct >= 75 ? 'badge-success' : pct >= 50 ? 'badge-primary' : pct >= 35 ? 'badge-warning' : 'badge-danger'}" style="font-size:0.8125rem;padding:5px 12px">

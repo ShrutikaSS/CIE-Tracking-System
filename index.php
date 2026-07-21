@@ -327,7 +327,41 @@ if (isLoggedIn()) {
       .hero h1 { font-size: 3.5rem; }
       .about-grid, .dean-grid { grid-template-columns: 1fr; }
       .about-img-wrap::after { display: none; }
-      .gallery-grid { grid-template-columns: 1fr; } }
+      .gallery-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Glassmorphism Login Modal Override */
+    #modal-login {
+      background: rgba(15, 23, 42, 0.4);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    #modal-login .modal-content {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      border-top: none;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);
+      max-width: 820px;
+      padding: 0;
+      display: flex;
+      flex-direction: row;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    @media (max-width: 768px) {
+      #modal-login .modal-content {
+        flex-direction: column;
+        max-width: 90%;
+      }
+      .login-brand-panel {
+        display: none !important;
+      }
+      .login-form-panel {
+        width: 100% !important;
+        padding: 30px 20px !important;
+      }
     }
   </style>
 </head>
@@ -714,53 +748,66 @@ if (isLoggedIn()) {
   <!-- Login Modal Overlay -->
   <div class="modal-overlay" id="modal-login">
     <div class="modal-content">
-      <button class="modal-close" onclick="closeModal('modal-login')">✕</button>
-      <h2>Portal Login</h2>
-      <p class="modal-subtitle">Authenticate to access secure academic records</p>
       
-      <div class="login-error" id="login-error">
-        <span id="login-error-text"></span>
+      <!-- Left Side: Brand Panel -->
+      <div class="login-brand-panel" style="width: 40%; background: linear-gradient(135deg, #0d3a71 0%, #061e3d 100%); padding: 40px 30px; color: white; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; border-top-left-radius: 12px; border-bottom-left-radius: 12px;">
+        <div style="position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; border-radius: 50%; background: rgba(255,255,255,0.03); pointer-events: none;"></div>
+        <div style="position: absolute; bottom: -80px; left: -80px; width: 250px; height: 250px; border-radius: 50%; background: rgba(255,255,255,0.02); pointer-events: none;"></div>
+        
+        <div style="z-index: 2;">
+          <img src="assets/logo.jpg" alt="ZCOER Logo" style="height: 65px; width: auto; border-radius: 6px; margin-bottom: 24px; filter: brightness(1.1); box-shadow: 0 4px 10px rgba(0,0,0,0.2);">
+          <h3 style="color: white; font-size: 1.6rem; line-height: 1.3; font-family: var(--font-serif); font-weight: 700; margin-bottom: 12px;">CIE Marks Portal</h3>
+          <p style="font-size: 0.875rem; opacity: 0.8; font-weight: 300; line-height: 1.5; font-family: var(--font-sans);">Access your academic evaluation records, marks trends, and activity submissions on our secure internal platform.</p>
+        </div>
+        
+        <div style="z-index: 2; font-size: 0.75rem; opacity: 0.6; line-height: 1.4; font-family: var(--font-sans);">
+          Zeal College of Engineering & Research<br>
+          Narhe, Pune - 411041
+        </div>
       </div>
-      
-      <form id="login-form" onsubmit="handleLogin(event)">
-        <div class="form-group">
-          <label for="email">College Email</label>
-          <input type="email" id="email" class="form-control" placeholder="user@zealedu.in" required>
+
+      <!-- Right Side: Form Panel -->
+      <div class="login-form-panel" style="width: 60%; padding: 40px 35px; position: relative; display: flex; flex-direction: column; justify-content: center; background: white; border-top-right-radius: 12px; border-bottom-right-radius: 12px;">
+        <button class="modal-close" onclick="closeModal('modal-login')" style="position: absolute; top: 15px; right: 20px;">✕</button>
+        <h2 style="font-size: 1.6rem; color: var(--zeal-black); margin-bottom: 4px;">Portal Login</h2>
+        <p class="modal-subtitle" style="margin-bottom: 24px; font-size: 0.9rem;">Authenticate to access secure academic records</p>
+        
+        <div class="login-error" id="login-error" style="margin-bottom: 20px; display: none;">
+          <span id="login-error-text"></span>
         </div>
         
-        <div class="form-group">
-          <label for="password">Password</label>
-          <input type="password" id="password" class="form-control" required>
-        </div>
+        <form id="login-form" onsubmit="handleLogin(event)">
+          <div class="form-group" style="margin-bottom: 18px;">
+            <label for="email" style="font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;">College Email</label>
+            <input type="email" id="email" class="form-control" placeholder="user@zealedu.in" required style="border-radius: 6px; height: 42px;">
+          </div>
+          
+          <div class="form-group" style="margin-bottom: 20px;">
+            <label for="password" style="font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;">Password</label>
+            <input type="password" id="password" class="form-control" required placeholder="••••••••" style="border-radius: 6px; height: 42px;">
+          </div>
+          
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; font-size: 0.85rem;">
+            <label style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
+              <input type="checkbox" id="remember"> Remember me
+            </label>
+            <a href="#" onclick="openForgotModal(event)" style="color: var(--zeal-blue); font-weight: 600; text-decoration: none;">Forgot Password?</a>
+          </div>
+          
+          <button type="submit" class="btn-submit" id="login-btn" style="border-radius: 6px; padding: 12px; font-size: 1rem; letter-spacing: 0.5px; width: 100%;">Secure Login</button>
+        </form>
         
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; font-size: 0.95rem;">
-          <label style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
-            <input type="checkbox" id="remember"> Remember credentials
-          </label>
-          <a href="#" onclick="openForgotModal(event)">Forgot Password?</a>
-        </div>
-        
-        <button type="submit" class="btn-submit" id="login-btn">Secure Login</button>
-      </form>
-      
-      <!-- Demo Accounts -->
-      <div class="demo-accounts">
-        <h4 style="margin-bottom: 20px; font-size: 0.9rem; color: var(--zeal-gray); text-transform: uppercase;">Testing Credentials</h4>
-        
-        <div class="demo-item" onclick="fillDemo('admin@cie.edu')">
-          <span>admin@cie.edu</span> <span class="demo-role">Admin</span>
-        </div>
-        <div class="demo-item" onclick="fillDemo('hod.cse@cie.edu')">
-          <span>hod.cse@cie.edu</span> <span class="demo-role">HOD</span>
-        </div>
-        <div class="demo-item" onclick="fillDemo('anil.mehta@cie.edu')">
-          <span>anil.mehta@cie.edu</span> <span class="demo-role">Faculty</span>
-        </div>
-        <div class="demo-item" onclick="fillDemo('sneha.patil@cie.edu')">
-          <span>sneha.patil@cie.edu</span> <span class="demo-role">Coord</span>
-        </div>
-        <div class="demo-item" onclick="fillDemo('rahul.verma@cie.edu')">
-          <span>rahul.verma@cie.edu</span> <span class="demo-role">Student</span>
+        <!-- Demo Accounts -->
+        <div class="demo-accounts" style="margin-top: 24px; border-top: 1px solid rgba(0,0,0,0.06); padding-top: 16px;">
+          <h4 style="margin-bottom: 12px; font-size: 0.8rem; color: var(--zeal-gray); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Click to Auto-Fill & Test</h4>
+          
+          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            <button type="button" class="btn btn-sm btn-secondary" onclick="fillDemoTyping('admin@cie.edu', 'Admin')" style="font-size:0.75rem; padding: 6px 12px; border-radius: 4px; text-transform:none; font-weight: 500;">Admin</button>
+            <button type="button" class="btn btn-sm btn-secondary" onclick="fillDemoTyping('hod.cse@cie.edu', 'HOD')" style="font-size:0.75rem; padding: 6px 12px; border-radius: 4px; text-transform:none; font-weight: 500;">HOD (CSE)</button>
+            <button type="button" class="btn btn-sm btn-secondary" onclick="fillDemoTyping('anil.mehta@cie.edu', 'Faculty')" style="font-size:0.75rem; padding: 6px 12px; border-radius: 4px; text-transform:none; font-weight: 500;">Faculty</button>
+            <button type="button" class="btn btn-sm btn-secondary" onclick="fillDemoTyping('sneha.patil@cie.edu', 'Coordinator')" style="font-size:0.75rem; padding: 6px 12px; border-radius: 4px; text-transform:none; font-weight: 500;">Coordinator</button>
+            <button type="button" class="btn btn-sm btn-secondary" onclick="fillDemoTyping('rahul.verma@cie.edu', 'Student')" style="font-size:0.75rem; padding: 6px 12px; border-radius: 4px; text-transform:none; font-weight: 500; background: var(--primary-lighter); color: var(--primary); border-color: var(--primary-lighter);">Student</button>
+          </div>
         </div>
       </div>
     </div>
@@ -828,10 +875,53 @@ if (isLoggedIn()) {
       });
     });
 
+    let typingInterval = null;
+
+    function fillDemoTyping(demoEmail, roleName) {
+      if (typingInterval) clearInterval(typingInterval);
+
+      const emailInput = document.getElementById('email');
+      const passwordInput = document.getElementById('password');
+      const loginBtn = document.getElementById('login-btn');
+
+      emailInput.value = '';
+      passwordInput.value = '';
+      emailInput.classList.remove('error');
+      passwordInput.classList.remove('error');
+
+      let emailIndex = 0;
+      let passwordIndex = 0;
+      const demoPassword = 'password123';
+
+      emailInput.focus();
+
+      typingInterval = setInterval(() => {
+        if (emailIndex < demoEmail.length) {
+          emailInput.value += demoEmail[emailIndex];
+          emailIndex++;
+        } else {
+          clearInterval(typingInterval);
+          passwordInput.focus();
+
+          typingInterval = setInterval(() => {
+            if (passwordIndex < demoPassword.length) {
+              passwordInput.value += demoPassword[passwordIndex];
+              passwordIndex++;
+            } else {
+              clearInterval(typingInterval);
+              typingInterval = null;
+              
+              // Highlight submit button
+              loginBtn.style.transform = 'scale(1.02)';
+              setTimeout(() => { loginBtn.style.transform = ''; }, 150);
+            }
+          }, 30);
+        }
+      }, 20);
+    }
+
     function fillDemo(email) {
-      document.getElementById('email').value = email;
-      document.getElementById('password').value = 'password123';
-      document.getElementById('email').focus();
+      fillDemoTyping(email, '');
     }
     
     async function handleLogin(e) {

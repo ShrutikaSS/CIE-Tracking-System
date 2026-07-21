@@ -17,12 +17,12 @@
   --bg-input: #f8fafc;
   --bg-modal-overlay: rgba(15, 23, 42, 0.7);
 
-  /* Accent (Harvard Crimson) */
-  --primary: #A51C30;
-  --primary-light: #c92a40;
-  --primary-lighter: #fbe9eb;
-  --primary-gradient: linear-gradient(135deg, #A51C30 0%, #c92a40 100%);
-  --primary-gradient-hover: linear-gradient(135deg, #8a1527 0%, #A51C30 100%);
+  /* Accent (Zeal Blue) */
+  --primary: #0d3a71;
+  --primary-light: #14559b;
+  --primary-lighter: #e6f0fa;
+  --primary-gradient: linear-gradient(135deg, #0d3a71 0%, #14559b 100%);
+  --primary-gradient-hover: linear-gradient(135deg, #092850 0%, #0d3a71 100%);
 
   /* Semantic */
   --success: #10b981;

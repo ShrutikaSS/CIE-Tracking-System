@@ -1,0 +1,2 @@
+<?php
+// Navigation bar component

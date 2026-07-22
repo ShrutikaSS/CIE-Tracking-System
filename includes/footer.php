@@ -56,7 +56,29 @@
     </div>
   </div>
 
+  <!-- Logout Confirmation Modal -->
+  <div class="modal-overlay" id="modal-logout-confirm">
+    <div class="modal" style="max-width: 400px;">
+      <div class="modal-header">
+        <h3>Confirm Logout</h3>
+        <button class="modal-close" onclick="Modal.close('modal-logout-confirm')">✕</button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to log out of the CIE Marks Tracking System?</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="Modal.close('modal-logout-confirm')">Cancel</button>
+        <button class="btn btn-danger" onclick="window.location.href='/logout.php'">Logout</button>
+      </div>
+    </div>
+  </div>
+
   <script>
+    function openLogoutModal(e) {
+      if (e) e.preventDefault();
+      Modal.open('modal-logout-confirm');
+    }
+
     function openChangePasswordModal() {
       document.getElementById('form-change-password').reset();
       Modal.open('modal-change-password');

@@ -18,7 +18,8 @@ $icons = [
     'reports'     => '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>',
     'progress'    => '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>',
     'profile'     => '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>',
-    'attendance'  => '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>'
+    'attendance'  => '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>',
+    'notifications'=> '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>'
 ];
 
 function navItem($href, $icon, $label, $currentPath, $count = null) {
@@ -99,8 +100,8 @@ function navItem($href, $icon, $label, $currentPath, $count = null) {
       <?= navItem('/reports/subject_report.php', $icons['reports'], 'Subject Report', $currentPath) ?>
     </div>
     
-    <?php elseif ($userRole === 'faculty' || $userRole === 'coordinator'): ?>
-    <!-- Faculty / Coordinator Menu -->
+    <?php elseif ($userRole === 'faculty'): ?>
+    <!-- Faculty Menu -->
     <div class="nav-section">
       <div class="nav-section-title">Teaching</div>
       <?= navItem('/faculty/activities.php', $icons['activities'], 'Activities', $currentPath) ?>
@@ -110,6 +111,16 @@ function navItem($href, $icon, $label, $currentPath, $count = null) {
       <div class="nav-section-title">Reports</div>
       <?= navItem('/reports/student_report.php', $icons['reports'], 'Student Report', $currentPath) ?>
       <?= navItem('/reports/subject_report.php', $icons['reports'], 'Subject Report', $currentPath) ?>
+    </div>
+    
+    <?php elseif ($userRole === 'coordinator'): ?>
+    <!-- Class Coordinator Menu -->
+    <div class="nav-section">
+      <div class="nav-section-title">Class Coordinator</div>
+      <?= navItem('/dashboard.php', $icons['dashboard'], 'Dashboard', $currentPath) ?>
+      <?= navItem('/coordinator/class_performance.php', $icons['progress'], 'Class Performance', $currentPath) ?>
+      <?= navItem('/coordinator/student_progress.php', $icons['students'], 'Student Progress', $currentPath) ?>
+      <?= navItem('/coordinator/reports.php', $icons['reports'], 'Reports', $currentPath) ?>
     </div>
     <?php endif; ?>
     <?php endif; ?>

@@ -246,14 +246,48 @@ switch ($action) {
             $userId = $user['id'];
             $stu = dbFetchOne("SELECT id FROM students WHERE user_id = ?", 'i', [$userId]);
             $stuId = $stu ? $stu['id'] : 0;
+
+            $semester = !empty($_GET['semester']) && $_GET['semester'] !== 'all' ? (int)$_GET['semester'] : 0;
+            $cieType = !empty($_GET['cie']) && $_GET['cie'] !== 'all' ? $_GET['cie'] : '';
+            $dept = !empty($_GET['dept']) && $_GET['dept'] !== 'all' ? $_GET['dept'] : '';
+
+            $where = ["m.student_id = ?", "m.is_published = 1"];
+            $params = [$stuId];
+            $types = 'i';
+
+            if ($semester > 0) {
+                $where[] = "s.semester = ?";
+                $params[] = $semester;
+                $types .= 'i';
+            }
+            if (!empty($cieType)) {
+                $where[] = "a.type = ?";
+                $params[] = strtolower($cieType);
+                $types .= 's';
+            }
+            if (!empty($dept)) {
+                $where[] = "d.code = ?";
+                $params[] = strtoupper($dept);
+                $types .= 's';
+            }
+
+            $whereSql = implode(' AND ', $where);
+
             $data = dbFetchAll(
-                "SELECT s.code as label, 
+                "SELECT s.code as label,
+                        s.name as subject_name,
+                        s.semester,
+                        d.code as dept_code,
+                        ROUND(SUM(m.marks_obtained), 1) as total_obtained,
+                        ROUND(SUM(a.max_marks), 1) as total_max,
                         ROUND(AVG(m.marks_obtained / a.max_marks * 100), 1) as value 
                  FROM marks m 
                  JOIN activities a ON m.activity_id = a.id 
                  JOIN subjects s ON a.subject_id = s.id 
-                 WHERE m.student_id = ? AND m.is_published = 1 
-                 GROUP BY s.id, s.code", 'i', [$stuId]
+                 LEFT JOIN departments d ON s.department_id = d.id
+                 WHERE $whereSql
+                 GROUP BY s.id, s.code, s.name, s.semester, d.code
+                 ORDER BY s.code", $types, $params
             );
             jsonResponse(['success' => true, 'chart' => $data]);
         }

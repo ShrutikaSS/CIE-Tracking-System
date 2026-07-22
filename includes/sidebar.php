@@ -84,21 +84,16 @@ function navItem($href, $icon, $label, $currentPath, $count = null) {
     <!-- HOD Menu -->
     <div class="nav-section">
       <div class="nav-section-title">Department</div>
-      <?= navItem('/admin/faculty.php', $icons['faculty'], 'Faculty', $currentPath) ?>
+      <?= navItem('/hod/faculty_performance.php', $icons['faculty'], 'Faculty Performance', $currentPath) ?>
       <?= navItem('/admin/students.php', $icons['students'], 'Students', $currentPath) ?>
       <?= navItem('/admin/subjects.php', $icons['subjects'], 'Subjects', $currentPath) ?>
     </div>
     <div class="nav-section">
       <div class="nav-section-title">Activities</div>
       <?= navItem('/faculty/activities.php', $icons['activities'], 'Activities', $currentPath) ?>
-      <?= navItem('/faculty/marks.php', $icons['marks'], 'Marks Entry', $currentPath) ?>
-    </div>
-    <div class="nav-section">
-      <div class="nav-section-title">Reports</div>
-      <?= navItem('/reports/student_report.php', $icons['reports'], 'Student Report', $currentPath) ?>
-      <?= navItem('/reports/subject_report.php', $icons['reports'], 'Subject Report', $currentPath) ?>
     </div>
     
+
     <?php elseif ($userRole === 'faculty' || $userRole === 'coordinator'): ?>
     <!-- Faculty / Coordinator Menu -->
     <div class="nav-section">

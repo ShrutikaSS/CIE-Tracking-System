@@ -93,6 +93,7 @@ requireRole(['student']);
       <option value="AIML">AIML</option>
       <option value="AIDS">AIDS</option>
       <option value="IT">IT</option>
+      <option value="ENTC">ENTC</option>
       <option value="ME">ME</option>
       <option value="CE">CE</option>
       <option value="EE">EE</option>

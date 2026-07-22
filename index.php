@@ -561,6 +561,11 @@ if (isLoggedIn()) {
           <h3>Electrical Engineering</h3>
           <p>Assessing power systems, electrical machines, circuit design, renewable energy systems, and control engineering labs.</p>
         </div>
+        <div class="dept-card">
+          <div class="dept-icon">📡</div>
+          <h3>Electronics & Telecommunication Engineering (ENTC)</h3>
+          <p>Evaluating communication systems, signal processing, VLSI design, embedded systems, and wireless networks.</p>
+        </div>
       </div>
     </div>
   </section>

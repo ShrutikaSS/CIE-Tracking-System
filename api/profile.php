@@ -17,11 +17,15 @@ if ($method === 'GET') {
     // Retrieve profile details
     $profile = dbFetchOne(
         "SELECT u.id as user_id, u.name, u.email, u.role, u.avatar,
-                s.id as student_id, s.usn, s.prn_number, s.roll_number, s.semester, s.section, s.phone,
-                d.name as department_name
+                s.id as student_id, s.usn, s.prn_number, s.roll_number, s.semester, s.section,
+                f.id as faculty_id, f.employee_id, f.designation,
+                COALESCE(s.phone, f.phone) as phone,
+                COALESCE(d.name, fd.name) as department_name
          FROM users u
          LEFT JOIN students s ON s.user_id = u.id
          LEFT JOIN departments d ON s.department_id = d.id
+         LEFT JOIN faculty f ON f.user_id = u.id
+         LEFT JOIN departments fd ON f.department_id = fd.id
          WHERE u.id = ?", 'i', [$userId]
     );
     
@@ -87,9 +91,11 @@ if ($method === 'POST') {
     }
     $_SESSION['user_email'] = $email; // Update session
     
-    // Update students table
+    // Update students or faculty table
     if ($user['role'] === 'student') {
         dbExecute("UPDATE students SET phone = ? WHERE user_id = ?", 'si', [$phone, $userId]);
+    } elseif (in_array($user['role'], ['hod', 'faculty', 'coordinator'])) {
+        dbExecute("UPDATE faculty SET phone = ? WHERE user_id = ?", 'si', [$phone, $userId]);
     }
     
     // Create notification

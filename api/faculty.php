@@ -87,7 +87,7 @@ switch ($method) {
 
         $facId = dbInsert(
             "INSERT INTO faculty (user_id, employee_id, designation, department_id, phone) VALUES (?, ?, ?, ?, ?)",
-            'isssi', [$userId, $employeeId, $designation, $deptId, $phone]
+            'issis', [$userId, $employeeId, $designation, $deptId, $phone]
         );
 
         jsonResponse(['success' => true, 'message' => 'Faculty added.', 'id' => $facId]);
@@ -114,7 +114,7 @@ switch ($method) {
         dbExecute("UPDATE users SET name = ?, email = ?, role = ?, department_id = ? WHERE id = ?",
             'sssii', [$name, $email, $role, $deptId, $fac['user_id']]);
         dbExecute("UPDATE faculty SET employee_id = ?, designation = ?, department_id = ?, phone = ? WHERE id = ?",
-            'sssis', [$employeeId, $designation, $deptId, $phone, $id]);
+            'ssisi', [$employeeId, $designation, $deptId, $phone, $id]);
 
         jsonResponse(['success' => true, 'message' => 'Faculty updated.']);
         break;

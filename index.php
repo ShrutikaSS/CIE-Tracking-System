@@ -210,15 +210,15 @@ if (isLoggedIn()) {
     
     /* Academic Departments Section (New) */
     .departments-section { padding: 120px 0; background: var(--zeal-light-gray); }
-    .dept-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 40px; margin-top: 50px; }
-    .dept-card { background: var(--white); padding: 40px 30px; text-align: center; border-radius: 12px; border: 1px solid rgba(0,0,0,0.03); transition: border-color 0.4s, transform 0.4s, box-shadow 0.4s; box-shadow: 0 4px 15px rgba(0,0,0,0.03); position: relative; overflow: hidden; }
+    .dept-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; margin-top: 50px; }
+    .dept-card { background: var(--white); padding: 40px 30px; text-align: center; border-radius: 12px; border: 1px solid rgba(0,0,0,0.03); transition: border-color 0.4s, transform 0.4s, box-shadow 0.4s; box-shadow: 0 4px 15px rgba(0,0,0,0.03); position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; height: 100%; }
     .dept-card::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 5px; background: var(--zeal-blue); transform: scaleX(0); transition: transform 0.4s ease; transform-origin: left; }
     .dept-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.08); border-color: transparent; }
     .dept-card:hover::after { transform: scaleX(1); }
-    .dept-icon { font-size: 4rem; margin-bottom: 20px; transition: transform 0.4s; }
+    .dept-icon { font-size: 3.8rem; margin-bottom: 20px; transition: transform 0.4s; line-height: 1; }
     .dept-card:hover .dept-icon { transform: scale(1.1); }
-    .dept-card h3 { font-size: 1.4rem; margin-bottom: 15px; }
-    .dept-card p { color: var(--zeal-gray); }
+    .dept-card h3 { font-size: 1.35rem; margin-bottom: 15px; font-weight: 700; color: var(--zeal-black); }
+    .dept-card p { color: var(--zeal-gray); font-size: 0.98rem; line-height: 1.6; margin: 0; }
  
     /* Image Gallery Section (New) */
     .gallery-section { padding: 120px 0; background: var(--white); }
@@ -319,10 +319,12 @@ if (isLoggedIn()) {
     .demo-role { color: var(--zeal-blue); font-weight: 700; font-size: 0.85rem; text-transform: uppercase; }
     
     @media (max-width: 992px) {
+      .dept-grid { grid-template-columns: repeat(2, 1fr); gap: 30px; }
       .gallery-grid { grid-template-columns: 1fr 1fr; }
       .gallery-item-large { grid-column: span 1; grid-row: span 1; }
     }
     @media (max-width: 768px) {
+      .dept-grid { grid-template-columns: 1fr; }
       .nav-links { display: none; }
       .hero h1 { font-size: 3.5rem; }
       .about-grid, .dean-grid { grid-template-columns: 1fr; }
@@ -521,8 +523,28 @@ if (isLoggedIn()) {
       <div class="dept-grid animate-on-scroll">
         <div class="dept-card">
           <div class="dept-icon">💻</div>
-          <h3>Computer Science</h3>
+          <h3>Computer Science Engineering</h3>
           <p>Tracking algorithms, code reviews, and theoretical exams.</p>
+        </div>
+        <div class="dept-card">
+          <div class="dept-icon">🧠</div>
+          <h3>Artificial Intelligence & Machine Learning (AIML)</h3>
+          <p>Training AI models, machine learning algorithms, deep learning applications, computer vision, and intelligent systems.</p>
+        </div>
+        <div class="dept-card">
+          <div class="dept-icon">📊</div>
+          <h3>Artificial Intelligence & Data Science (AIDS)</h3>
+          <p>Working with big data, data analytics, predictive modeling, data visualization, and AI-driven insights.</p>
+        </div>
+        <div class="dept-card">
+          <div class="dept-icon">🌐</div>
+          <h3>Information Technology (IT)</h3>
+          <p>Managing software development, web technologies, cloud computing, networking, databases, and cybersecurity projects.</p>
+        </div>
+        <div class="dept-card">
+          <div class="dept-icon">🦾</div>
+          <h3>Robotics & Automation</h3>
+          <p>Evaluating robotics projects, automation systems, embedded controllers, industrial automation, and control engineering.</p>
         </div>
         <div class="dept-card">
           <div class="dept-icon">⚙️</div>
@@ -535,19 +557,14 @@ if (isLoggedIn()) {
           <p>Evaluating structural design projects and material testing labs.</p>
         </div>
         <div class="dept-card">
-          <div class="dept-icon">🧬</div>
-          <h3>Biotechnology</h3>
-          <p>Recording research data, practical lab skills, and thesis reviews.</p>
+          <div class="dept-icon">⚡</div>
+          <h3>Electrical Engineering</h3>
+          <p>Assessing power systems, electrical machines, circuit design, renewable energy systems, and control engineering labs.</p>
         </div>
         <div class="dept-card">
-          <div class="dept-icon">📊</div>
-          <h3>Business Administration</h3>
-          <p>Scoring case studies, group presentations, and finance assignments.</p>
-        </div>
-        <div class="dept-card">
-          <div class="dept-icon">⚖️</div>
-          <h3>Law & Jurisprudence</h3>
-          <p>Assessing mock trials, legal drafting, and constitutional debates.</p>
+          <div class="dept-icon">📡</div>
+          <h3>Electronics & Telecommunication Engineering (ENTC)</h3>
+          <p>Evaluating communication systems, signal processing, VLSI design, embedded systems, and wireless networks.</p>
         </div>
       </div>
     </div>

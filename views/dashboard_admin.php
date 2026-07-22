@@ -4,9 +4,7 @@
     <h1>Admin Dashboard</h1>
     <div class="breadcrumb">Welcome back, <?= sanitize($user['name']) ?> 👋</div>
   </div>
-  <div class="actions">
-    <a href="/admin/students.php" class="btn btn-primary">+ Add Student</a>
-  </div>
+  
 </div>
 
 <!-- Stats Cards -->

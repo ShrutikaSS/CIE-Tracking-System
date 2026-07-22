@@ -1,7 +1,7 @@
 <?php
 $pageTitle = 'Profile';
 require_once __DIR__ . '/../includes/header.php';
-requireRole(['student']);
+requireRole(['admin', 'hod', 'faculty', 'coordinator', 'student']);
 ?>
 
 <div class="page-header">
@@ -23,15 +23,15 @@ requireRole(['student']);
       <p id="profile-card-role" class="text-muted" style="font-size:0.85rem; text-transform:uppercase; font-weight:600; letter-spacing:0.5px;">Student</p>
       <div class="divider" style="height:1px; background:var(--border-color); margin:16px 0;"></div>
       <div style="text-align:left; font-size:0.825rem;">
-        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-          <span class="text-muted">USN:</span>
-          <strong id="profile-card-usn">—</strong>
+        <div style="display:flex; justify-content:space-between; margin-bottom:8px;" id="profile-card-row-id">
+          <span class="text-muted" id="profile-card-label-id">USN:</span>
+          <strong id="profile-card-value-id">—</strong>
         </div>
-        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:8px;" id="profile-card-row-dept">
           <span class="text-muted">Department:</span>
           <strong id="profile-card-dept">—</strong>
         </div>
-        <div style="display:flex; justify-content:space-between;">
+        <div style="display:flex; justify-content:space-between;" id="profile-card-row-sem">
           <span class="text-muted">Semester:</span>
           <strong id="profile-card-sem">—</strong>
         </div>
@@ -64,13 +64,13 @@ requireRole(['student']);
               <label>Full Name</label>
               <input type="text" class="form-control" id="profile-name" readonly style="background:var(--border-light); cursor:not-allowed;">
             </div>
-            <div class="form-group">
-              <label>USN</label>
+            <div class="form-group" id="group-usn">
+              <label id="label-usn">USN</label>
               <input type="text" class="form-control" id="profile-usn" readonly style="background:var(--border-light); cursor:not-allowed;">
             </div>
           </div>
 
-          <div class="form-row">
+          <div class="form-row" id="row-prn-roll">
             <div class="form-group">
               <label>PRN Number</label>
               <input type="text" class="form-control" id="profile-prn" readonly style="background:var(--border-light); cursor:not-allowed;">
@@ -81,12 +81,12 @@ requireRole(['student']);
             </div>
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
+          <div class="form-row" id="row-dept-sem">
+            <div class="form-group" id="group-dept">
               <label>Department</label>
               <input type="text" class="form-control" id="profile-dept" readonly style="background:var(--border-light); cursor:not-allowed;">
             </div>
-            <div class="form-group">
+            <div class="form-group" id="group-sem-sec">
               <label>Semester & Section</label>
               <input type="text" class="form-control" id="profile-sem-sec" readonly style="background:var(--border-light); cursor:not-allowed;">
             </div>
@@ -180,9 +180,7 @@ async function loadProfileData() {
     
     // Set text on card
     document.getElementById('profile-card-name').textContent = p.name;
-    document.getElementById('profile-card-usn').textContent = p.usn;
-    document.getElementById('profile-card-dept').textContent = p.department_name;
-    document.getElementById('profile-card-sem').textContent = `Semester ${p.semester} (${p.section})`;
+    document.getElementById('profile-card-role').textContent = p.role;
     
     // Render avatar
     currentInitials = p.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
@@ -191,14 +189,75 @@ async function loadProfileData() {
     
     // Set form fields
     document.getElementById('profile-name').value = p.name;
-    document.getElementById('profile-usn').value = p.usn;
-    document.getElementById('profile-prn').value = p.prn_number || '—';
-    document.getElementById('profile-roll').value = p.roll_number || '—';
-    document.getElementById('profile-dept').value = p.department_name;
-    document.getElementById('profile-sem-sec').value = `Semester ${p.semester} - Section ${p.section}`;
-    
     document.getElementById('profile-email').value = p.email;
     document.getElementById('profile-phone').value = p.phone || '';
+
+    // Elements
+    const cardRowId = document.getElementById('profile-card-row-id');
+    const cardLabelId = document.getElementById('profile-card-label-id');
+    const cardValueId = document.getElementById('profile-card-value-id');
+    const cardRowDept = document.getElementById('profile-card-row-dept');
+    const cardRowSem = document.getElementById('profile-card-row-sem');
+
+    const groupUsn = document.getElementById('group-usn');
+    const labelUsn = document.getElementById('label-usn');
+    const profileUsn = document.getElementById('profile-usn');
+    const rowPrnRoll = document.getElementById('row-prn-roll');
+    const rowDeptSem = document.getElementById('row-dept-sem');
+    const groupDept = document.getElementById('group-dept');
+    const groupSemSec = document.getElementById('group-sem-sec');
+    
+    if (p.role === 'student') {
+      // Left side card
+      cardRowId.style.display = 'flex';
+      cardLabelId.textContent = 'USN:';
+      cardValueId.textContent = p.usn || '—';
+      cardRowDept.style.display = 'flex';
+      document.getElementById('profile-card-dept').textContent = p.department_name || '—';
+      cardRowSem.style.display = 'flex';
+      document.getElementById('profile-card-sem').textContent = `Semester ${p.semester} (${p.section})`;
+      
+      // Right side form
+      groupUsn.style.display = 'block';
+      labelUsn.textContent = 'USN';
+      profileUsn.value = p.usn || '';
+      rowPrnRoll.style.display = 'flex';
+      document.getElementById('profile-prn').value = p.prn_number || '—';
+      document.getElementById('profile-roll').value = p.roll_number || '—';
+      rowDeptSem.style.display = 'flex';
+      groupDept.style.display = 'block';
+      document.getElementById('profile-dept').value = p.department_name || '—';
+      groupSemSec.style.display = 'block';
+      document.getElementById('profile-sem-sec').value = `Semester ${p.semester} - Section ${p.section}`;
+    } else if (['hod', 'faculty', 'coordinator'].includes(p.role)) {
+      // Left side card
+      cardRowId.style.display = 'flex';
+      cardLabelId.textContent = 'Employee ID:';
+      cardValueId.textContent = p.employee_id || '—';
+      cardRowDept.style.display = 'flex';
+      document.getElementById('profile-card-dept').textContent = p.department_name || '—';
+      cardRowSem.style.display = 'none';
+      
+      // Right side form
+      groupUsn.style.display = 'block';
+      labelUsn.textContent = 'Employee ID';
+      profileUsn.value = p.employee_id || '';
+      rowPrnRoll.style.display = 'none';
+      rowDeptSem.style.display = 'flex';
+      groupDept.style.display = 'block';
+      document.getElementById('profile-dept').value = p.department_name || '—';
+      groupSemSec.style.display = 'none';
+    } else { // admin
+      // Left side card
+      cardRowId.style.display = 'none';
+      cardRowDept.style.display = 'none';
+      cardRowSem.style.display = 'none';
+      
+      // Right side form
+      groupUsn.style.display = 'none';
+      rowPrnRoll.style.display = 'none';
+      rowDeptSem.style.display = 'none';
+    }
   } else {
     Toast.error('Failed to load profile data.');
   }

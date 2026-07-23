@@ -118,4 +118,56 @@ if ($existing) {
     $message = 'Submission uploaded successfully.';
 }
 
+// Notify faculty assigned to the subject
+$facultyInfo = dbFetchOne(
+    "SELECT f.user_id 
+     FROM activities a 
+     JOIN subjects s ON a.subject_id = s.id 
+     JOIN faculty f ON s.faculty_id = f.id 
+     WHERE a.id = ?",
+    'i', [$activityId]
+);
+
+// Get student name and USN separately
+$studentInfo = dbFetchOne(
+    "SELECT u.name as student_name, st.usn 
+     FROM students st 
+     JOIN users u ON st.user_id = u.id 
+     WHERE st.id = ?",
+    'i', [$studentId]
+);
+
+if ($facultyInfo && !empty($facultyInfo['user_id']) && $studentInfo) {
+    $title = $existing ? 'Updated Activity Submission' : 'New Activity Submission';
+    $notifMsg = sprintf(
+        '%s (%s) %s "%s" for %s.',
+        $studentInfo['student_name'],
+        $studentInfo['usn'],
+        $existing ? 'updated their submission for' : 'submitted',
+        $activity['name'],
+        $activity['subject_name']
+    );
+    createNotification(
+        $facultyInfo['user_id'],
+        $title,
+        $notifMsg,
+        'info',
+        '/faculty/marks.php?activity=' . $activityId,
+        'new_submission',
+        'portal'
+    );
+}
+
+// Notify the student that their submission was received
+$submissionLabel = $existing ? 'updated' : 'received';
+createNotification(
+    $user['id'],
+    'Submission ' . ucfirst($submissionLabel),
+    sprintf('Your submission for "%s" has been %s successfully.', $activity['name'], $submissionLabel),
+    'success',
+    '/student/activities.php',
+    'submission_received',
+    'portal'
+);
+
 jsonResponse(['success' => true, 'message' => $message]);

@@ -85,12 +85,12 @@
     </div>
     <div class="card-body">
       <div style="display:flex;flex-direction:column;gap:12px;">
-        <a href="/admin/departments.php" class="btn btn-secondary w-100" style="justify-content:flex-start">🏢 Manage Departments</a>
-        <a href="/admin/faculty.php" class="btn btn-secondary w-100" style="justify-content:flex-start">👨‍🏫 Manage Faculty</a>
-        <a href="/admin/students.php" class="btn btn-secondary w-100" style="justify-content:flex-start">🎓 Manage Students</a>
-        <a href="/admin/subjects.php" class="btn btn-secondary w-100" style="justify-content:flex-start">📚 Manage Subjects</a>
-        <a href="/faculty/activities.php" class="btn btn-secondary w-100" style="justify-content:flex-start">📝 View Activities</a>
-        <a href="/reports/student_report.php" class="btn btn-secondary w-100" style="justify-content:flex-start">📄 Generate Reports</a>
+        <a href="<?= url('/admin/departments.php') ?>" class="btn btn-secondary w-100" style="justify-content:flex-start">🏢 Manage Departments</a>
+        <a href="<?= url('/admin/faculty.php') ?>" class="btn btn-secondary w-100" style="justify-content:flex-start">👨‍🏫 Manage Faculty</a>
+        <a href="<?= url('/admin/students.php') ?>" class="btn btn-secondary w-100" style="justify-content:flex-start">🎓 Manage Students</a>
+        <a href="<?= url('/admin/subjects.php') ?>" class="btn btn-secondary w-100" style="justify-content:flex-start">📚 Manage Subjects</a>
+        <a href="<?= url('/faculty/activities.php') ?>" class="btn btn-secondary w-100" style="justify-content:flex-start">📝 View Activities</a>
+        <a href="<?= url('/reports/student_report.php') ?>" class="btn btn-secondary w-100" style="justify-content:flex-start">📄 Generate Reports</a>
       </div>
     </div>
   </div>

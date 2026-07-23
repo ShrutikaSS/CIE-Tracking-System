@@ -153,6 +153,23 @@ switch ($method) {
             'ssiiiii', [$name, strtoupper($code), $sem, $credits, $deptId, $facId, $id]
         );
 
+        // Notify enrolled students of schedule / course update
+        $students = dbFetchAll(
+            "SELECT s.user_id FROM students s JOIN subject_students ss ON ss.student_id = s.id WHERE ss.subject_id = ?",
+            'i', [$id]
+        );
+        foreach ($students as $stu) {
+            createNotification(
+                $stu['user_id'],
+                'Semester Schedule Update',
+                "The course configuration or schedule for \"{$name}\" (" . strtoupper($code) . ") has been updated.",
+                'info',
+                '/student/activities.php',
+                'schedule_update',
+                'portal'
+            );
+        }
+
         jsonResponse(['success' => true, 'message' => 'Subject updated.']);
         break;
 

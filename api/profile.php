@@ -99,7 +99,7 @@ if ($method === 'POST') {
     }
     
     // Create notification
-    createNotification($userId, 'Profile Updated', 'Your profile details have been successfully updated.', 'success');
+    createNotification($userId, 'Profile Updated', 'Your profile details have been successfully updated.', 'success', '/student/profile.php', 'profile_updated', 'portal');
     
     jsonResponse(['success' => true, 'message' => 'Profile updated successfully.', 'avatar' => $avatarUrl]);
 }

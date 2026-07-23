@@ -171,10 +171,28 @@ CREATE TABLE IF NOT EXISTS notifications (
   type ENUM('info','success','warning','danger') NOT NULL DEFAULT 'info',
   is_read TINYINT(1) NOT NULL DEFAULT 0,
   link VARCHAR(255) DEFAULT NULL,
+  event_type VARCHAR(50) DEFAULT NULL,
+  channel ENUM('portal', 'email', 'sms', 'all') NOT NULL DEFAULT 'portal',
+  email_status ENUM('pending', 'sent', 'failed') NOT NULL DEFAULT 'sent',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   INDEX idx_user_read (user_id, is_read),
   INDEX idx_created (created_at)
+) ENGINE=InnoDB;
+
+-- ============================================
+-- 10. SUBMISSIONS TABLE
+-- ============================================
+CREATE TABLE IF NOT EXISTS submissions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  activity_id INT NOT NULL,
+  student_id INT NOT NULL,
+  file_path VARCHAR(255) DEFAULT NULL,
+  submission_text TEXT DEFAULT NULL,
+  submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (activity_id) REFERENCES activities(id) ON DELETE CASCADE,
+  FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+  UNIQUE KEY uk_submission (activity_id, student_id)
 ) ENGINE=InnoDB;
 
 

@@ -10,6 +10,10 @@ requireLogin();
 header('Content-Type: application/json');
 
 $user = currentUser();
+
+// Run automated system alert checks (Deadline Reminders, Overdue Missing Submissions)
+runSystemAlertCheck();
+
 $action = $_GET['action'] ?? 'stats';
 
 switch ($action) {

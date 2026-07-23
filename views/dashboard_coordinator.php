@@ -1,10 +1,38 @@
 <!-- Coordinator Dashboard View -->
+<?php
+// Fetch unread HOD messages at page load to show a warning alert
+$unreadHODMessages = dbFetchAll(
+    "SELECT m.*, u.name as sender_name FROM hod_messages m 
+     JOIN users u ON u.id = m.sender_id 
+     WHERE m.department_id = ? AND (m.recipient_id = ? OR m.recipient_id IS NULL) AND m.is_read = 0 
+     ORDER BY m.created_at DESC LIMIT 3",
+    'ii', [$_SESSION['department_id'] ?? 0, $_SESSION['user_id'] ?? 0]
+);
+?>
+
 <div class="page-header">
   <div>
     <h1>Class Coordinator Dashboard</h1>
     <div class="breadcrumb">Welcome, <?= sanitize($user['name']) ?> 👋 (Class Coordinator - TE-CSE-A)</div>
   </div>
 </div>
+
+<?php if (!empty($unreadHODMessages)): ?>
+<div class="card mb-3" style="border-left: 4px solid var(--danger); background: var(--danger-light); border-top: none; box-shadow: var(--shadow-sm);">
+  <div class="card-body" style="padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; gap: 15px; flex-wrap: wrap;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span style="font-size: 1.5rem;">📩</span>
+      <div>
+        <strong style="color: var(--danger);">Messages from HOD</strong>
+        <div class="fs-sm text-secondary" style="margin-top: 2px;">
+          You have <?= count($unreadHODMessages) ?> unread HOD message(s). Latest: "<strong><?= sanitize($unreadHODMessages[0]['subject']) ?></strong>"
+        </div>
+      </div>
+    </div>
+    <a href="/coordinator/messages.php" class="btn btn-sm btn-danger" style="background: var(--danger); border-radius: 4px; color: white;">View Messages</a>
+  </div>
+</div>
+<?php endif; ?>
 
 <!-- Stats Cards -->
 <div class="stats-grid stagger mb-3" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">

@@ -62,13 +62,24 @@ $initials = $user ? strtoupper(substr($user['name'], 0, 1) . substr(strrchr($use
 <body>
   <script>
     // Prevent flash of unstyled content by applying theme immediately
-    if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-      document.body.classList.add('dark-theme');
-    }
+    (function() {
+      try {
+        const theme = localStorage.getItem('theme');
+        if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.body.classList.add('dark-theme');
+        }
+      } catch (e) {
+        console.warn('localStorage is not available:', e);
+      }
+    })();
     
     function toggleTheme() {
       const isDark = document.body.classList.toggle('dark-theme');
-      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      try {
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      } catch (e) {
+        console.warn('localStorage is not available for setting:', e);
+      }
     }
   </script>
   <div class="app-layout">
@@ -105,13 +116,58 @@ $initials = $user ? strtoupper(substr($user['name'], 0, 1) . substr(strrchr($use
           </div>
 
           <?php if ($_SESSION['user_role'] === 'coordinator'): ?>
-          <!-- Coordinator Taskbar: Notifications Icon -->
-          <div style="display: flex; align-items: center; gap: 6px; margin-right: 15px;">
+          <!-- Coordinator Taskbar: Notifications Icon & HOD Messages Icon -->
+          <?php
+          $unreadHODCount = 0;
+          if (isset($user['id'])) {
+              $cntRow = dbFetchOne(
+                  "SELECT COUNT(*) as cnt FROM hod_messages WHERE department_id = ? AND (recipient_id = ? OR recipient_id IS NULL) AND is_read = 0",
+                  'ii', [$_SESSION['department_id'] ?? 0, $user['id']]
+              );
+              $unreadHODCount = $cntRow ? (int)$cntRow['cnt'] : 0;
+          }
+          ?>
+          <div style="display: flex; align-items: center; gap: 10px; margin-right: 15px;">
+            <a href="/coordinator/messages.php" title="HOD Messages" class="notification-bell" style="position:relative; text-decoration:none;" id="header-hod-msg-link">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+              <span class="notification-badge animate-badge" id="header-hod-msg-badge" style="background:var(--danger); color:#fff; display:<?= $unreadHODCount > 0 ? 'block' : 'none' ?>;"><?= $unreadHODCount ?></span>
+            </a>
+            
             <a href="/coordinator/notifications.php" title="Notifications" class="notification-bell" style="position:relative; text-decoration:none;">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
               <span class="notification-badge" style="background:var(--danger); color:#fff; display:block;">3</span>
             </a>
           </div>
+          
+          <script>
+            async function checkHODMessages() {
+              try {
+                const res = await fetch('/api/messages.php?action=unread_count').then(r => r.json());
+                if (res && res.success) {
+                  const badge = document.getElementById('header-hod-msg-badge');
+                  const count = res.count;
+                  if (badge) {
+                    badge.innerText = count;
+                    badge.style.display = count > 0 ? 'block' : 'none';
+                  }
+                  // Also update sidebar badge if visible
+                  const sidebarBadge = document.querySelector('.nav-item[href="/coordinator/messages.php"] .nav-count');
+                  if (sidebarBadge) {
+                    sidebarBadge.innerText = count;
+                    sidebarBadge.style.display = count > 0 ? 'flex' : 'none';
+                  }
+                }
+              } catch (e) {
+                console.error('Failed to update HOD messages count:', e);
+              }
+            }
+            
+            document.addEventListener('DOMContentLoaded', () => {
+              checkHODMessages();
+              // Check every 30 seconds
+              setInterval(checkHODMessages, 30000);
+            });
+          </script>
           <?php else: ?>
           <!-- Non-coordinator: Notifications dropdown -->
           <div style="position:relative">

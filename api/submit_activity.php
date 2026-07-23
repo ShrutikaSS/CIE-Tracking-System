@@ -1,0 +1,121 @@
+<?php
+/**
+ * Submit Activity API — Handles File Upload & Text Submissions for Students
+ */
+require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/functions.php';
+
+requireRole(['student']);
+header('Content-Type: application/json');
+
+$user = currentUser();
+$method = requestMethod();
+
+if ($method !== 'POST') {
+    jsonResponse(['success' => false, 'message' => 'Method not allowed.'], 405);
+}
+
+// Get student ID
+$stu = dbFetchOne("SELECT id FROM students WHERE user_id = ?", 'i', [$user['id']]);
+if (!$stu) {
+    jsonResponse(['success' => false, 'message' => 'Student record not found.'], 404);
+}
+$studentId = $stu['id'];
+
+// Get parameters from POST
+$activityId = (int)($_POST['activity_id'] ?? 0);
+$submissionText = trim($_POST['submission_text'] ?? '');
+
+if (!$activityId) {
+    jsonResponse(['success' => false, 'message' => 'Activity ID is required.'], 400);
+}
+
+// Verify activity exists and student is enrolled in the subject
+$activity = dbFetchOne(
+    "SELECT a.*, s.name as subject_name 
+     FROM activities a 
+     JOIN subjects s ON a.subject_id = s.id 
+     JOIN subject_students ss ON ss.subject_id = s.id 
+     WHERE a.id = ? AND ss.student_id = ? AND a.status IN ('active', 'completed')",
+    'ii', [$activityId, $studentId]
+);
+
+if (!$activity) {
+    jsonResponse(['success' => false, 'message' => 'Activity not found or not enrolled in this subject.'], 404);
+}
+
+// Handle file upload
+$filePath = null;
+if (isset($_FILES['submission_file']) && $_FILES['submission_file']['error'] === UPLOAD_ERR_OK) {
+    $file = $_FILES['submission_file'];
+    
+    // File validation
+    $maxSize = 5 * 1024 * 1024; // 5MB
+    $allowedMimes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/x-png'];
+    
+    // Check extension
+    $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    $allowedExts = ['pdf', 'jpg', 'jpeg', 'png'];
+    
+    if (!in_array($ext, $allowedExts) || !in_array($file['type'], $allowedMimes)) {
+        jsonResponse(['success' => false, 'message' => 'Invalid file type. Only PDF, JPG, JPEG, and PNG files are allowed.'], 400);
+    }
+    
+    if ($file['size'] > $maxSize) {
+        jsonResponse(['success' => false, 'message' => 'File size exceeds 5MB limit.'], 400);
+    }
+    
+    // Create directory
+    $uploadDir = __DIR__ . '/../uploads/submissions/';
+    if (!is_dir($uploadDir)) {
+        mkdir($uploadDir, 0755, true);
+    }
+    
+    $fileName = 'sub_' . $studentId . '_' . $activityId . '_' . time() . '.' . $ext;
+    $targetPath = $uploadDir . $fileName;
+    
+    if (move_uploaded_file($file['tmp_name'], $targetPath)) {
+        $filePath = '/uploads/submissions/' . $fileName;
+    } else {
+        jsonResponse(['success' => false, 'message' => 'Failed to move uploaded file.'], 500);
+    }
+}
+
+// Check if submission already exists
+$existing = dbFetchOne(
+    "SELECT id, file_path FROM submissions WHERE student_id = ? AND activity_id = ?",
+    'ii', [$studentId, $activityId]
+);
+
+if ($existing) {
+    // Overwriting submission: delete old file if a new one is uploaded
+    if ($filePath && $existing['file_path']) {
+        $oldFileRealPath = __DIR__ . '/..' . $existing['file_path'];
+        if (file_exists($oldFileRealPath)) {
+            @unlink($oldFileRealPath);
+        }
+    }
+    
+    // Update
+    if ($filePath) {
+        dbExecute(
+            "UPDATE submissions SET file_path = ?, submission_text = ? WHERE id = ?",
+            'ssi', [$filePath, $submissionText ?: null, $existing['id']]
+        );
+    } else {
+        dbExecute(
+            "UPDATE submissions SET submission_text = ? WHERE id = ?",
+            'si', [$submissionText ?: null, $existing['id']]
+        );
+    }
+    $message = 'Submission updated successfully.';
+} else {
+    // Insert
+    dbInsert(
+        "INSERT INTO submissions (activity_id, student_id, file_path, submission_text) VALUES (?, ?, ?, ?)",
+        'iiss', [$activityId, $studentId, $filePath, $submissionText ?: null]
+    );
+    $message = 'Submission uploaded successfully.';
+}
+
+jsonResponse(['success' => true, 'message' => $message]);

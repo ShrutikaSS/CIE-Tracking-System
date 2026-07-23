@@ -31,15 +31,28 @@ switch ($method) {
         $status    = $_GET['status'] ?? '';
         $search    = $_GET['search'] ?? '';
         
-        $sql = "SELECT a.*, s.name as subject_name, s.code as subject_code, u.name as created_by_name,
+        $selectFields = "a.*, s.name as subject_name, s.code as subject_code, u.name as created_by_name,
                 (SELECT COUNT(*) FROM marks m WHERE m.activity_id = a.id) as marks_entered,
-                (SELECT COUNT(*) FROM subject_students ss WHERE ss.subject_id = a.subject_id) as total_students
+                (SELECT COUNT(*) FROM subject_students ss WHERE ss.subject_id = a.subject_id) as total_students";
+        $joinSubmissions = "";
+        $types = '';
+        $params = [];
+        
+        if ($user['role'] === 'student') {
+            $stu = dbFetchOne("SELECT id FROM students WHERE user_id = ?", 'i', [$user['id']]);
+            $stuId = $stu ? $stu['id'] : 0;
+            $selectFields .= ", sub.id as submission_id, sub.file_path, sub.submission_text, sub.submitted_at";
+            $joinSubmissions = " LEFT JOIN submissions sub ON sub.activity_id = a.id AND sub.student_id = ?";
+            $types .= 'i';
+            $params[] = $stuId;
+        }
+        
+        $sql = "SELECT $selectFields
                 FROM activities a 
                 JOIN subjects s ON a.subject_id = s.id 
                 JOIN users u ON a.created_by = u.id 
+                $joinSubmissions
                 WHERE 1=1";
-        $types = '';
-        $params = [];
         
         // Faculty/Coordinator see only their subjects' activities
         if (in_array($user['role'], ['faculty', 'coordinator'])) {
@@ -58,8 +71,6 @@ switch ($method) {
         }
 
         if ($user['role'] === 'student') {
-            $stu = dbFetchOne("SELECT id FROM students WHERE user_id = ?", 'i', [$user['id']]);
-            $stuId = $stu ? $stu['id'] : 0;
             $sql .= " AND s.id IN (SELECT subject_id FROM subject_students WHERE student_id = ?) AND a.status IN ('active', 'completed')";
             $types .= 'i';
             $params[] = $stuId;

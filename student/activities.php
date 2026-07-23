@@ -63,11 +63,12 @@ requireRole(['student']);
             <th data-sortable="true">Activity Date</th>
             <th data-sortable="true">Deadline</th>
             <th data-sortable="true">Status</th>
+            <th data-sortable="true">Submission</th>
             <th data-sortable="false">Actions</th>
           </tr>
         </thead>
         <tbody id="activities-tbody">
-          <tr><td colspan="8" class="text-center"><div class="spinner spinner-sm" style="margin:20px auto;"></div></td></tr>
+          <tr><td colspan="9" class="text-center"><div class="spinner spinner-sm" style="margin:20px auto;"></div></td></tr>
         </tbody>
       </table>
     </div>
@@ -108,6 +109,69 @@ requireRole(['student']);
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="Modal.close('modal-activity-details')">Close</button>
     </div>
+  </div>
+</div>
+
+<!-- Submit Activity Modal -->
+<div class="modal-overlay" id="modal-submit-activity">
+  <div class="modal" style="max-width:550px;">
+    <div class="modal-header">
+      <h3 id="submit-modal-title">Submit Activity</h3>
+      <button class="modal-close" onclick="Modal.close('modal-submit-activity')">✕</button>
+    </div>
+    <form id="submit-activity-form" onsubmit="handleActivitySubmit(event)">
+      <input type="hidden" id="submit-activity-id" name="activity_id">
+      <div class="modal-body">
+        <!-- Info card -->
+        <div class="card mb-3" style="background:var(--bg-light); border:1px solid var(--border-color); padding:12px; border-radius:6px; margin-bottom:15px;">
+          <div style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase; font-weight:600;">Activity</div>
+          <div id="submit-info-name" style="font-weight:700; font-size:1.1rem; color:var(--text-primary); margin-top:2px;">—</div>
+          <div style="display:flex; gap:16px; margin-top:8px; font-size:0.875rem;">
+            <div><strong>Type:</strong> <span id="submit-info-type">—</span></div>
+            <div><strong>Max Marks:</strong> <span id="submit-info-max-marks">—</span></div>
+          </div>
+        </div>
+
+        <!-- Submission details if already submitted -->
+        <div id="already-submitted-view" style="display:none; margin-bottom:20px; border-left:4px solid var(--success); padding-left:12px; background:rgba(46, 204, 113, 0.05); padding-top:8px; padding-bottom:8px; border-radius:4px;">
+          <div style="font-weight:600; color:var(--success); font-size:0.9rem;">Previous Submission:</div>
+          <div style="margin-top:6px; font-size:0.875rem;">
+            <strong>Submitted on:</strong> <span id="prev-submitted-at">—</span>
+          </div>
+          <div id="prev-file-container" style="margin-top:6px; font-size:0.875rem; display:none;">
+            <strong>File:</strong> <a id="prev-file-link" href="#" target="_blank" style="color:var(--primary); font-weight:600; text-decoration:underline;">View Submitted File</a>
+          </div>
+          <div id="prev-text-container" style="margin-top:6px; font-size:0.875rem; display:none;">
+            <strong>Your Answers / Comments:</strong>
+            <p id="prev-text-content" style="background:var(--bg-input); padding:8px; border-radius:4px; margin-top:4px; white-space:pre-wrap; border:1px solid var(--border-color);"></p>
+          </div>
+          
+          <button type="button" class="btn btn-sm btn-outline" id="btn-show-submit-form" onclick="toggleSubmissionForm(true)" style="margin-top:12px;">
+            Update Submission / Resubmit
+          </button>
+        </div>
+
+        <!-- Form fields (dynamic based on type) -->
+        <div id="submission-form-fields">
+          <!-- Text answers for quizzes, or optional comments for assignments -->
+          <div class="form-group" id="text-submission-group" style="margin-bottom:15px;">
+            <label id="text-submission-label" style="font-weight:600; display:block; margin-bottom:6px;">Submission Text / Comments</label>
+            <textarea class="form-control" id="submission-text-input" name="submission_text" rows="5" placeholder="Enter your text here..."></textarea>
+          </div>
+
+          <!-- File upload -->
+          <div class="form-group" id="file-submission-group" style="margin-bottom:15px;">
+            <label id="file-submission-label" style="font-weight:600; display:block; margin-bottom:6px;">Upload File (PDF or JPG/PNG image)</label>
+            <input type="file" class="form-control" id="submission-file-input" name="submission_file" accept=".pdf,.jpg,.jpeg,.png">
+            <small class="text-muted" style="display:block; margin-top:4px; color:var(--text-muted);">Maximum file size: 5MB. Formats: PDF, JPG, JPEG, PNG.</small>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="Modal.close('modal-submit-activity')">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="btn-submit-action">Submit</button>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -153,7 +217,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (res && res.success) {
       allActivities = res.activities;
       if (allActivities.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="text-center" style="padding:40px 0;"><div class="icon" style="margin-bottom:8px; display:flex; justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-muted);"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg></div><h3>No activities found</h3><p>No activities match your filters.</p></td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" class="text-center" style="padding:40px 0;"><div class="icon" style="margin-bottom:8px; display:flex; justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-muted);"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg></div><h3>No activities found</h3><p>No activities match your filters.</p></td></tr>';
         return;
       }
 
@@ -167,15 +231,35 @@ document.addEventListener('DOMContentLoaded', async () => {
           <td>${formatDate(a.deadline)}</td>
           <td><span class="badge ${a.status === 'completed' ? 'badge-success' : 'badge-primary'}">${a.status}</span></td>
           <td>
-            <button class="btn btn-sm btn-secondary" style="display:inline-flex; align-items:center; gap:6px;" onclick="viewDetails(${a.id})">
-              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-              View
-            </button>
+            ${a.submission_id 
+              ? `<span class="badge badge-success" style="display:inline-flex; align-items:center; gap:4px;">
+                   <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                   Submitted
+                 </span>` 
+              : `<span class="badge badge-secondary">Not Submitted</span>`}
+          </td>
+          <td>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+              <button class="btn btn-sm btn-secondary" style="display:inline-flex; align-items:center; gap:6px;" onclick="viewDetails(${a.id})">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                View Details
+              </button>
+              ${a.submission_id 
+                ? `<button class="btn btn-sm btn-outline" style="display:inline-flex; align-items:center; gap:6px;" onclick="openSubmitModal(${a.id}, true)">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                     View Submission
+                   </button>` 
+                : `<button class="btn btn-sm btn-primary" style="display:inline-flex; align-items:center; gap:6px;" onclick="openSubmitModal(${a.id}, false)">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path><line x1="12" y1="11" x2="12" y2="17"></line><line x1="9" y1="14" x2="15" y2="14"></line></svg>
+                     Submit
+                   </button>`
+              }
+            </div>
           </td>
         </tr>
       `).join('');
     } else {
-      tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger" style="padding:20px;">Failed to load activities.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="9" class="text-center text-danger" style="padding:20px;">Failed to load activities.</td></tr>';
     }
   };
 
@@ -201,6 +285,152 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('detail-description').textContent = a.description || 'No description provided.';
 
     Modal.open('modal-activity-details');
+  };
+
+  // Open Submit Activity Modal
+  window.openSubmitModal = (id, viewOnly) => {
+    const a = allActivities.find(item => item.id === id);
+    if (!a) return;
+
+    // Reset form
+    document.getElementById('submit-activity-form').reset();
+    document.getElementById('submit-activity-id').value = a.id;
+    document.getElementById('submit-info-name').textContent = a.name;
+    document.getElementById('submit-info-type').textContent = a.type.toUpperCase();
+    document.getElementById('submit-info-max-marks').textContent = parseFloat(a.max_marks).toFixed(1);
+
+    const prevView = document.getElementById('already-submitted-view');
+    const formFields = document.getElementById('submission-form-fields');
+    const submitBtn = document.getElementById('btn-submit-action');
+
+    // Dynamic field labels and requirements
+    const fileLabel = document.getElementById('file-submission-label');
+    const fileInput = document.getElementById('submission-file-input');
+    const textLabel = document.getElementById('text-submission-label');
+    const textInput = document.getElementById('submission-text-input');
+
+    if (a.type === 'quiz') {
+      textLabel.textContent = 'Quiz Answers / Response (Required)';
+      textInput.required = true;
+      textInput.placeholder = 'Type your answers/response to the quiz questions here...';
+      
+      fileLabel.textContent = 'Supporting File (Optional - PDF/Image)';
+      fileInput.required = false;
+    } else {
+      textLabel.textContent = 'Comments / Notes (Optional)';
+      textInput.required = false;
+      textInput.placeholder = 'Add any additional notes for the faculty...';
+      
+      fileLabel.textContent = 'Upload Submission File (Required - PDF/Image)';
+      fileInput.required = !a.submission_id; 
+    }
+
+    if (a.submission_id) {
+      prevView.style.display = 'block';
+      document.getElementById('prev-submitted-at').textContent = formatDate(a.submitted_at);
+      
+      if (a.file_path) {
+        document.getElementById('prev-file-container').style.display = 'block';
+        document.getElementById('prev-file-link').href = a.file_path;
+        document.getElementById('prev-file-link').textContent = `View Submitted File (${a.file_path.split('/').pop()})`;
+      } else {
+        document.getElementById('prev-file-container').style.display = 'none';
+      }
+
+      if (a.submission_text) {
+        document.getElementById('prev-text-container').style.display = 'block';
+        document.getElementById('prev-text-content').textContent = a.submission_text;
+      } else {
+        document.getElementById('prev-text-container').style.display = 'none';
+      }
+
+      if (viewOnly) {
+        formFields.style.display = 'none';
+        submitBtn.style.display = 'none';
+        document.getElementById('btn-show-submit-form').style.display = 'inline-block';
+      } else {
+        formFields.style.display = 'block';
+        submitBtn.style.display = 'inline-block';
+        document.getElementById('btn-show-submit-form').style.display = 'none';
+      }
+    } else {
+      prevView.style.display = 'none';
+      formFields.style.display = 'block';
+      submitBtn.style.display = 'inline-block';
+    }
+
+    Modal.open('modal-submit-activity');
+  };
+
+  // Toggle Submission Form in Modal
+  window.toggleSubmissionForm = (show) => {
+    const formFields = document.getElementById('submission-form-fields');
+    const submitBtn = document.getElementById('btn-submit-action');
+    const btnShowSubmitForm = document.getElementById('btn-show-submit-form');
+    
+    if (show) {
+      formFields.style.display = 'block';
+      submitBtn.style.display = 'inline-block';
+      btnShowSubmitForm.style.display = 'none';
+    } else {
+      formFields.style.display = 'none';
+      submitBtn.style.display = 'none';
+      btnShowSubmitForm.style.display = 'inline-block';
+    }
+  };
+
+  // Submit Activity Form Action
+  window.handleActivitySubmit = async (event) => {
+    event.preventDefault();
+
+    const form = event.target;
+    const fileInput = document.getElementById('submission-file-input');
+    const activityId = document.getElementById('submit-activity-id').value;
+
+    if (fileInput.files.length > 0) {
+      const file = fileInput.files[0];
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      const allowedExts = ['pdf', 'jpg', 'jpeg', 'png'];
+      const ext = file.name.split('.').pop().toLowerCase();
+
+      if (!allowedExts.includes(ext)) {
+        Toast.error('Invalid file type. Only PDF, JPG, JPEG, and PNG are allowed.');
+        return;
+      }
+
+      if (file.size > maxSize) {
+        Toast.error('File size exceeds 5MB limit.');
+        return;
+      }
+    }
+
+    const formData = new FormData(form);
+
+    try {
+      showLoading();
+      const response = await fetch('/api/submit_activity.php', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      });
+      
+      const result = await response.json();
+      hideLoading();
+
+      if (result && result.success) {
+        Toast.success(result.message);
+        Modal.close('modal-submit-activity');
+        await loadActivities();
+      } else {
+        Toast.error(result ? result.message : 'Submission failed.');
+      }
+    } catch (error) {
+      hideLoading();
+      console.error('Submission error:', error);
+      Toast.error('An error occurred during submission.');
+    }
   };
 });
 </script>

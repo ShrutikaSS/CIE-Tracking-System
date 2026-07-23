@@ -200,7 +200,7 @@ async function loadActivities() {
       <td>${marksInfo}</td>
       <td>
         <button class="btn btn-sm btn-secondary" onclick="editActivity(${a.id})">✏️</button>
-        <a href="/faculty/marks.php?activity=${a.id}" class="btn btn-sm btn-outline">📊 Marks</a>
+        <a href="/faculty/marks.php?activity=${a.id}" class="btn btn-sm btn-primary">📊 Review & Grade</a>
         <button class="btn btn-sm btn-danger" onclick="deleteActivity(${a.id}, '${a.name.replace(/'/g, "\\'")}')">🗑️</button>
       </td>
     </tr>`;

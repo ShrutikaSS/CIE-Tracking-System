@@ -50,6 +50,11 @@ switch ($method) {
             'ssi', [$name, strtoupper($code), $hodId]
         );
 
+        if ($id && $hodId) {
+            // Promote new HOD and set their department
+            dbExecute("UPDATE users SET role = 'hod', department_id = ? WHERE id = ?", 'ii', [$id, $hodId]);
+        }
+
         jsonResponse(['success' => true, 'message' => 'Department created.', 'id' => $id]);
         break;
 
@@ -69,10 +74,29 @@ switch ($method) {
             jsonResponse(['success' => false, 'message' => 'Department code already exists.'], 400);
         }
 
+        // Get current HOD of the department for role sync
+        $currentDept = dbFetchOne("SELECT hod_id FROM departments WHERE id = ?", 'i', [$id]);
+        $oldHodId = $currentDept ? $currentDept['hod_id'] : null;
+
         dbExecute(
             "UPDATE departments SET name = ?, code = ?, hod_id = ? WHERE id = ?",
             'ssii', [$name, strtoupper($code), $hodId, $id]
         );
+
+        // Synchronize roles
+        if ($oldHodId !== $hodId) {
+            if ($oldHodId) {
+                // Check if old HOD is HOD of any other department
+                $isHodElsewhere = dbFetchOne("SELECT id FROM departments WHERE hod_id = ? AND id != ?", 'ii', [$oldHodId, $id]);
+                if (!$isHodElsewhere) {
+                    dbExecute("UPDATE users SET role = 'faculty' WHERE id = ?", 'i', [$oldHodId]);
+                }
+            }
+            if ($hodId) {
+                // Promote new HOD and set their department
+                dbExecute("UPDATE users SET role = 'hod', department_id = ? WHERE id = ?", 'ii', [$id, $hodId]);
+            }
+        }
 
         jsonResponse(['success' => true, 'message' => 'Department updated.']);
         break;

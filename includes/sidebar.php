@@ -44,9 +44,10 @@ if ($userRole === 'coordinator') {
 }
 
 function navItem($href, $icon, $label, $currentPath, $count = null) {
+    $fullUrl = url($href);
     $active = strpos($currentPath, $href) !== false ? 'active' : '';
     $badge = $count !== null ? "<span class=\"nav-count\">$count</span>" : '';
-    return "<a href=\"$href\" class=\"nav-item $active\" data-title=\"$label\">
+    return "<a href=\"$fullUrl\" class=\"nav-item $active\" data-title=\"$label\">
               <span class=\"nav-icon\">$icon</span>
               <span class=\"nav-label\">$label</span>
               $badge

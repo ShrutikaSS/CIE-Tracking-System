@@ -106,6 +106,50 @@ requireRole(['admin', 'hod']);
   </div>
 </div>
 
+<!-- Enrollment Modal -->
+<div class="modal-overlay" id="modal-enrollment">
+  <div class="modal" style="max-width: 600px;">
+    <div class="modal-header">
+      <h3 id="modal-enrollment-title">Enroll Students</h3>
+      <button class="modal-close" onclick="Modal.close('modal-enrollment')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="enroll-subject-id">
+      <div class="form-group mb-3">
+        <div class="search-filter" style="width: 100%;">
+          <span class="icon">🔍</span>
+          <input type="text" id="search-enroll-students" placeholder="Search students by USN or Name..." oninput="filterEnrollStudents()">
+        </div>
+      </div>
+      <div class="mb-2" style="display:flex; justify-content:space-between; align-items:center;">
+        <span class="text-muted" id="enrollment-summary">0 students found</span>
+        <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-weight:500; font-family:var(--font-sans);">
+          <input type="checkbox" id="select-all-students" onchange="toggleSelectAllStudents(this)"> Select All
+        </label>
+      </div>
+      <div class="table-container" style="max-height: 300px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+        <table class="table mb-0" style="width: 100%;">
+          <thead>
+            <tr>
+              <th style="width: 40px; text-align: center;"></th>
+              <th>USN</th>
+              <th>Name</th>
+              <th>Roll / Sec</th>
+            </tr>
+          </thead>
+          <tbody id="enrollment-tbody">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="Modal.close('modal-enrollment')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEnrollment()">Save Enrollment</button>
+    </div>
+  </div>
+</div>
+
 <script>
 async function loadOptions() {
   const deptRes = await API.get('/api/departments.php');
@@ -148,6 +192,7 @@ async function loadSubjects() {
       <td>${s.student_count}</td>
       <td>${s.activity_count}</td>
       <td>
+        <button class="btn btn-sm btn-secondary" style="background-color: var(--info); color: white; border: none;" onclick="openEnrollment(${s.id}, '${s.name}')">👥 Enroll</button>
         <button class="btn btn-sm btn-secondary" onclick="editSubject(${s.id})">✏️</button>
         <button class="btn btn-sm btn-danger" onclick="deleteSubject(${s.id}, '${s.name}')">🗑️</button>
       </td>
@@ -199,6 +244,111 @@ async function deleteSubject(id, name) {
   const res = await API.request('/api/subjects.php', { method: 'DELETE', body: JSON.stringify({ id }) });
   if (res && res.success) { Toast.success(res.message); loadSubjects(); }
   else Toast.error(res?.message || 'Failed.');
+}
+
+let eligibleStudents = [];
+
+async function openEnrollment(subjectId, subjectName) {
+  document.getElementById('modal-enrollment-title').textContent = `Enroll Students — ${subjectName}`;
+  document.getElementById('enroll-subject-id').value = subjectId;
+  document.getElementById('search-enroll-students').value = '';
+  document.getElementById('select-all-students').checked = false;
+  
+  const tbody = document.getElementById('enrollment-tbody');
+  tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted" style="padding:20px">Loading students...</td></tr>';
+  
+  Modal.open('modal-enrollment');
+  
+  const res = await API.get(`/api/enrollment.php?subject_id=${subjectId}`);
+  if (res && res.success) {
+    eligibleStudents = res.students;
+    renderEnrollStudents();
+  } else {
+    tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger" style="padding:20px">${res?.message || 'Failed to load students.'}</td></tr>`;
+  }
+}
+
+function renderEnrollStudents() {
+  const tbody = document.getElementById('enrollment-tbody');
+  const searchVal = document.getElementById('search-enroll-students').value.trim().toLowerCase();
+  
+  const filtered = eligibleStudents.filter(s => 
+    s.name.toLowerCase().includes(searchVal) || 
+    s.usn.toLowerCase().includes(searchVal)
+  );
+  
+  document.getElementById('enrollment-summary').textContent = `${filtered.length} students eligible`;
+  
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted" style="padding:20px">No eligible students found in this department/semester.</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = filtered.map(s => `
+    <tr>
+      <td style="text-align: center; vertical-align: middle;">
+        <input type="checkbox" class="student-enroll-check" value="${s.student_id}" ${s.enrolled ? 'checked' : ''} onchange="updateStudentCheckState(${s.student_id}, this.checked)">
+      </td>
+      <td><span class="badge badge-info">${s.usn}</span></td>
+      <td><strong>${s.name}</strong></td>
+      <td class="text-muted">${s.section} / ${s.roll_number || 'N/A'}</td>
+    </tr>
+  `).join('');
+  
+  const allChecked = filtered.length > 0 && filtered.every(s => s.enrolled);
+  document.getElementById('select-all-students').checked = allChecked;
+}
+
+function updateStudentCheckState(studentId, isChecked) {
+  const student = eligibleStudents.find(s => s.student_id === studentId);
+  if (student) {
+    student.enrolled = isChecked;
+  }
+  
+  const searchVal = document.getElementById('search-enroll-students').value.trim().toLowerCase();
+  const filtered = eligibleStudents.filter(s => 
+    s.name.toLowerCase().includes(searchVal) || 
+    s.usn.toLowerCase().includes(searchVal)
+  );
+  const allChecked = filtered.length > 0 && filtered.every(s => s.enrolled);
+  document.getElementById('select-all-students').checked = allChecked;
+}
+
+function filterEnrollStudents() {
+  renderEnrollStudents();
+}
+
+function toggleSelectAllStudents(checkbox) {
+  const isChecked = checkbox.checked;
+  const searchVal = document.getElementById('search-enroll-students').value.trim().toLowerCase();
+  
+  eligibleStudents.forEach(s => {
+    if (s.name.toLowerCase().includes(searchVal) || s.usn.toLowerCase().includes(searchVal)) {
+      s.enrolled = isChecked;
+    }
+  });
+  
+  renderEnrollStudents();
+}
+
+async function saveEnrollment() {
+  const subjectId = parseInt(document.getElementById('enroll-subject-id').value);
+  const selectedStudentIds = eligibleStudents
+    .filter(s => s.enrolled)
+    .map(s => s.student_id);
+    
+  const res = await API.post('/api/enrollment.php', {
+    subject_id: subjectId,
+    student_ids: selectedStudentIds
+  });
+  
+  if (res && res.success) {
+    Toast.success(res.message);
+    Modal.close('modal-enrollment');
+    loadSubjects();
+  } else {
+    Toast.error(res?.message || 'Failed to save enrollment.');
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => { loadOptions(); loadSubjects(); });

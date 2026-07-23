@@ -171,7 +171,6 @@ async function saveDept() {
 async function deleteDept(id, name) {
   if (!confirm(`Delete department "${name}"? This will also remove all associated data.`)) return;
   
-  const res = await API.delete('/api/departments.php', { id });
   // delete sends body via request, let's use API.request
   const result = await API.request('/api/departments.php', {
     method: 'DELETE',

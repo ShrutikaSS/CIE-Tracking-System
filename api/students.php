@@ -93,6 +93,11 @@ switch ($method) {
             jsonResponse(['success' => false, 'message' => 'All required fields must be filled.'], 400);
         }
 
+        // Check HOD department access
+        if ($user['role'] === 'hod' && $deptId !== (int)$user['department_id']) {
+            jsonResponse(['success' => false, 'message' => 'Access denied.'], 403);
+        }
+
         // Check unique email
         if (dbFetchOne("SELECT id FROM users WHERE email = ?", 's', [$email])) {
             jsonResponse(['success' => false, 'message' => 'Email already exists.'], 400);
@@ -137,8 +142,15 @@ switch ($method) {
 
         if (!$id) jsonResponse(['success' => false, 'message' => 'Invalid ID.'], 400);
 
-        $student = dbFetchOne("SELECT user_id FROM students WHERE id = ?", 'i', [$id]);
+        $student = dbFetchOne("SELECT user_id, department_id FROM students WHERE id = ?", 'i', [$id]);
         if (!$student) jsonResponse(['success' => false, 'message' => 'Student not found.'], 404);
+
+        // Check HOD department access
+        if ($user['role'] === 'hod') {
+            if ((int)$student['department_id'] !== (int)$user['department_id'] || $deptId !== (int)$user['department_id']) {
+                jsonResponse(['success' => false, 'message' => 'Access denied.'], 403);
+            }
+        }
 
         // Check unique email
         $existingEmail = dbFetchOne("SELECT id FROM users WHERE email = ? AND id != ?", 'si', [$email, $student['user_id']]);
@@ -168,10 +180,15 @@ switch ($method) {
         $id = (int)($data['id'] ?? 0);
         if (!$id) jsonResponse(['success' => false, 'message' => 'Invalid ID.'], 400);
 
-        $student = dbFetchOne("SELECT user_id FROM students WHERE id = ?", 'i', [$id]);
-        if ($student) {
-            dbExecute("DELETE FROM users WHERE id = ?", 'i', [$student['user_id']]);
+        $student = dbFetchOne("SELECT user_id, department_id FROM students WHERE id = ?", 'i', [$id]);
+        if (!$student) jsonResponse(['success' => false, 'message' => 'Student not found.'], 404);
+
+        // Check HOD department access
+        if ($user['role'] === 'hod' && (int)$student['department_id'] !== (int)$user['department_id']) {
+            jsonResponse(['success' => false, 'message' => 'Access denied.'], 403);
         }
+
+        dbExecute("DELETE FROM users WHERE id = ?", 'i', [$student['user_id']]);
         jsonResponse(['success' => true, 'message' => 'Student deleted.']);
         break;
 

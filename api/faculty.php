@@ -72,6 +72,11 @@ switch ($method) {
 
         if (!in_array($role, ['faculty', 'coordinator', 'hod'])) $role = 'faculty';
 
+        // Check HOD department access
+        if ($user['role'] === 'hod' && $deptId !== (int)$user['department_id']) {
+            jsonResponse(['success' => false, 'message' => 'Access denied.'], 403);
+        }
+
         if (dbFetchOne("SELECT id FROM users WHERE email = ?", 's', [$email])) {
             jsonResponse(['success' => false, 'message' => 'Email already exists.'], 400);
         }
@@ -90,6 +95,15 @@ switch ($method) {
             'issis', [$userId, $employeeId, $designation, $deptId, $phone]
         );
 
+        // HOD role synchronization
+        if ($role === 'hod') {
+            $prevHod = dbFetchOne("SELECT hod_id FROM departments WHERE id = ?", 'i', [$deptId]);
+            if ($prevHod && $prevHod['hod_id']) {
+                dbExecute("UPDATE users SET role = 'faculty' WHERE id = ?", 'i', [$prevHod['hod_id']]);
+            }
+            dbExecute("UPDATE departments SET hod_id = ? WHERE id = ?", 'ii', [$userId, $deptId]);
+        }
+
         jsonResponse(['success' => true, 'message' => 'Faculty added.', 'id' => $facId]);
         break;
 
@@ -106,15 +120,45 @@ switch ($method) {
 
         if (!$id) jsonResponse(['success' => false, 'message' => 'Invalid ID.'], 400);
 
-        $fac = dbFetchOne("SELECT user_id FROM faculty WHERE id = ?", 'i', [$id]);
+        $fac = dbFetchOne(
+            "SELECT f.user_id, f.department_id, u.role 
+             FROM faculty f JOIN users u ON f.user_id = u.id 
+             WHERE f.id = ?", 'i', [$id]
+        );
         if (!$fac) jsonResponse(['success' => false, 'message' => 'Faculty not found.'], 404);
+
+        $oldRole = $fac['role'];
+        $oldDeptId = (int)$fac['department_id'];
+        $userId = (int)$fac['user_id'];
 
         if (!in_array($role, ['faculty', 'coordinator', 'hod'])) $role = 'faculty';
 
+        // Check HOD department access
+        if ($user['role'] === 'hod') {
+            if ($oldDeptId !== (int)$user['department_id'] || $deptId !== (int)$user['department_id']) {
+                jsonResponse(['success' => false, 'message' => 'Access denied.'], 403);
+            }
+        }
+
         dbExecute("UPDATE users SET name = ?, email = ?, role = ?, department_id = ? WHERE id = ?",
-            'sssii', [$name, $email, $role, $deptId, $fac['user_id']]);
+            'sssii', [$name, $email, $role, $deptId, $userId]);
         dbExecute("UPDATE faculty SET employee_id = ?, designation = ?, department_id = ?, phone = ? WHERE id = ?",
             'ssisi', [$employeeId, $designation, $deptId, $phone, $id]);
+
+        // HOD role synchronization
+        if ($oldRole === 'hod' && $role !== 'hod') {
+            dbExecute("UPDATE departments SET hod_id = NULL WHERE hod_id = ?", 'i', [$userId]);
+        }
+        if ($role === 'hod') {
+            $prevHod = dbFetchOne("SELECT hod_id FROM departments WHERE id = ?", 'i', [$deptId]);
+            if ($prevHod && $prevHod['hod_id'] && (int)$prevHod['hod_id'] !== $userId) {
+                dbExecute("UPDATE users SET role = 'faculty' WHERE id = ?", 'i', [$prevHod['hod_id']]);
+            }
+            dbExecute("UPDATE departments SET hod_id = ? WHERE id = ?", 'ii', [$userId, $deptId]);
+            if ($oldDeptId !== $deptId) {
+                dbExecute("UPDATE departments SET hod_id = NULL WHERE id = ? AND hod_id = ?", 'ii', [$oldDeptId, $userId]);
+            }
+        }
 
         jsonResponse(['success' => true, 'message' => 'Faculty updated.']);
         break;
@@ -124,10 +168,15 @@ switch ($method) {
         $id = (int)($data['id'] ?? 0);
         if (!$id) jsonResponse(['success' => false, 'message' => 'Invalid ID.'], 400);
 
-        $fac = dbFetchOne("SELECT user_id FROM faculty WHERE id = ?", 'i', [$id]);
-        if ($fac) {
-            dbExecute("DELETE FROM users WHERE id = ?", 'i', [$fac['user_id']]);
+        $fac = dbFetchOne("SELECT user_id, department_id FROM faculty WHERE id = ?", 'i', [$id]);
+        if (!$fac) jsonResponse(['success' => false, 'message' => 'Faculty not found.'], 404);
+
+        // Check HOD department access
+        if ($user['role'] === 'hod' && (int)$fac['department_id'] !== (int)$user['department_id']) {
+            jsonResponse(['success' => false, 'message' => 'Access denied.'], 403);
         }
+
+        dbExecute("DELETE FROM users WHERE id = ?", 'i', [$fac['user_id']]);
         jsonResponse(['success' => true, 'message' => 'Faculty deleted.']);
         break;
 

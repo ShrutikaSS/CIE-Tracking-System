@@ -35,7 +35,7 @@ $initials = $user ? strtoupper(substr($user['name'], 0, 1) . substr(strrchr($use
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   
   <!-- App CSS -->
-  <link rel="stylesheet" href="/assets/css/style.css">
+  <link rel="stylesheet" href="<?= url('/assets/css/style.css') ?>">
   
   <?php if (isset($user) && $user['role'] === 'coordinator'): ?>
   <!-- Class Coordinator Theme Color Overrides -->
@@ -128,12 +128,12 @@ $initials = $user ? strtoupper(substr($user['name'], 0, 1) . substr(strrchr($use
           }
           ?>
           <div style="display: flex; align-items: center; gap: 10px; margin-right: 15px;">
-            <a href="/coordinator/messages.php" title="HOD Messages" class="notification-bell" style="position:relative; text-decoration:none;" id="header-hod-msg-link">
+            <a href="<?= url('/coordinator/messages.php') ?>" title="HOD Messages" class="notification-bell" style="position:relative; text-decoration:none;" id="header-hod-msg-link">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
               <span class="notification-badge animate-badge" id="header-hod-msg-badge" style="background:var(--danger); color:#fff; display:<?= $unreadHODCount > 0 ? 'block' : 'none' ?>;"><?= $unreadHODCount ?></span>
             </a>
             
-            <a href="/coordinator/notifications.php" title="Notifications" class="notification-bell" style="position:relative; text-decoration:none;">
+            <a href="<?= url('/coordinator/notifications.php') ?>" title="Notifications" class="notification-bell" style="position:relative; text-decoration:none;">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
               <span class="notification-badge" style="background:var(--danger); color:#fff; display:block;">3</span>
             </a>
@@ -206,17 +206,21 @@ $initials = $user ? strtoupper(substr($user['name'], 0, 1) . substr(strrchr($use
               </span>
             </button>
             <div class="user-dropdown" id="user-dropdown">
-              <a href="/dashboard.php" style="display:flex; align-items:center; gap:8px;">
+              <a href="<?= url('/dashboard.php') ?>" style="display:flex; align-items:center; gap:8px;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
                 Dashboard
               </a>
-              <?php if ($_SESSION['user_role'] === 'student'): ?>
-                <a href="/student/profile.php" style="display:flex; align-items:center; gap:8px;">
+              <?php if (($_SESSION['user_role'] ?? '') === 'admin'): ?>
+                <a href="<?= url('/admin/profile.php') ?>" style="display:flex; align-items:center; gap:8px;">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                  Profile
+                  Admin Profile
+                </a>
+              <?php elseif (($_SESSION['user_role'] ?? '') === 'student'): ?>
+                <a href="<?= url('/student/profile.php') ?>" style="display:flex; align-items:center; gap:8px;">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                 </a>
               <?php elseif ($_SESSION['user_role'] === 'coordinator'): ?>
-                <a href="/coordinator/profile.php" style="display:flex; align-items:center; gap:8px;">
+                <a href="<?= url('/coordinator/profile.php') ?>" style="display:flex; align-items:center; gap:8px;">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                   Profile
                 </a>
@@ -227,7 +231,7 @@ $initials = $user ? strtoupper(substr($user['name'], 0, 1) . substr(strrchr($use
                 </button>
               <?php endif; ?>
               <div class="divider"></div>
-              <button class="logout-btn" onclick="window.location.href='/logout.php'" style="display:flex; align-items:center; gap:8px;">
+              <button class="logout-btn" onclick="window.location.href='<?= url('/logout.php') ?>'" style="display:flex; align-items:center; gap:8px;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--danger);"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
                 Logout
               </button>

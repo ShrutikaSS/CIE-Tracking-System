@@ -8,11 +8,25 @@ define('DB_HOST', 'localhost');
 define('DB_USER', 'root');
 define('DB_PASS', '');
 define('DB_NAME', 'cie_tracking');
+define('DB_PORT', 3306);
 
-// Create connection
-$conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+try {
+    $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+} catch (Throwable $e1) {
+    try {
+        $conn = new mysqli('127.0.0.1', DB_USER, DB_PASS, DB_NAME, 3306);
+    } catch (Throwable $e2) {
+        try {
+            $conn = new mysqli('127.0.0.1', DB_USER, DB_PASS, DB_NAME, 3307);
+        } catch (Throwable $e3) {
+            die(json_encode([
+                'success' => false,
+                'message' => 'Database connection failed: ' . $e3->getMessage()
+            ]));
+        }
+    }
+}
 
-// Check connection
 if ($conn->connect_error) {
     die(json_encode([
         'success' => false,

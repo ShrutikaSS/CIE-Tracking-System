@@ -103,6 +103,11 @@ switch ($method) {
             jsonResponse(['success' => false, 'message' => 'Name, code, and department are required.'], 400);
         }
 
+        // Check HOD department access
+        if ($user['role'] === 'hod' && $deptId !== (int)$user['department_id']) {
+            jsonResponse(['success' => false, 'message' => 'Access denied.'], 403);
+        }
+
         if (dbFetchOne("SELECT id FROM subjects WHERE code = ?", 's', [$code])) {
             jsonResponse(['success' => false, 'message' => 'Subject code already exists.'], 400);
         }
@@ -128,6 +133,16 @@ switch ($method) {
 
         if (!$id) jsonResponse(['success' => false, 'message' => 'Invalid ID.'], 400);
 
+        $sub = dbFetchOne("SELECT department_id FROM subjects WHERE id = ?", 'i', [$id]);
+        if (!$sub) jsonResponse(['success' => false, 'message' => 'Subject not found.'], 404);
+
+        // Check HOD department access
+        if ($user['role'] === 'hod') {
+            if ((int)$sub['department_id'] !== (int)$user['department_id'] || $deptId !== (int)$user['department_id']) {
+                jsonResponse(['success' => false, 'message' => 'Access denied.'], 403);
+            }
+        }
+
         $existing = dbFetchOne("SELECT id FROM subjects WHERE code = ? AND id != ?", 'si', [$code, $id]);
         if ($existing) {
             jsonResponse(['success' => false, 'message' => 'Subject code already exists.'], 400);
@@ -135,17 +150,42 @@ switch ($method) {
 
         dbExecute(
             "UPDATE subjects SET name = ?, code = ?, semester = ?, credits = ?, department_id = ?, faculty_id = ? WHERE id = ?",
-            'ssiiii' . 'i', [$name, strtoupper($code), $sem, $credits, $deptId, $facId, $id]
+            'ssiiiii', [$name, strtoupper($code), $sem, $credits, $deptId, $facId, $id]
         );
+
+        // Notify enrolled students of schedule / course update
+        $students = dbFetchAll(
+            "SELECT s.user_id FROM students s JOIN subject_students ss ON ss.student_id = s.id WHERE ss.subject_id = ?",
+            'i', [$id]
+        );
+        foreach ($students as $stu) {
+            createNotification(
+                $stu['user_id'],
+                'Semester Schedule Update',
+                "The course configuration or schedule for \"{$name}\" (" . strtoupper($code) . ") has been updated.",
+                'info',
+                '/student/activities.php',
+                'schedule_update',
+                'portal'
+            );
+        }
 
         jsonResponse(['success' => true, 'message' => 'Subject updated.']);
         break;
 
     case 'DELETE':
-        requireRole(['admin']);
+        requireRole(['admin', 'hod']);
         $data = getJsonBody();
         $id = (int)($data['id'] ?? 0);
         if (!$id) jsonResponse(['success' => false, 'message' => 'Invalid ID.'], 400);
+
+        $sub = dbFetchOne("SELECT department_id FROM subjects WHERE id = ?", 'i', [$id]);
+        if (!$sub) jsonResponse(['success' => false, 'message' => 'Subject not found.'], 404);
+
+        // Check HOD department access
+        if ($user['role'] === 'hod' && (int)$sub['department_id'] !== (int)$user['department_id']) {
+            jsonResponse(['success' => false, 'message' => 'Access denied.'], 403);
+        }
 
         dbExecute("DELETE FROM subjects WHERE id = ?", 'i', [$id]);
         jsonResponse(['success' => true, 'message' => 'Subject deleted.']);

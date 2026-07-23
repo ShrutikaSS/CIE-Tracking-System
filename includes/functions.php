@@ -6,6 +6,26 @@
 
 require_once __DIR__ . '/db.php';
 
+if (!defined('BASE_URL')) {
+    $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+    $dir = dirname($scriptName);
+    $knownSubDirs = ['/admin', '/faculty', '/student', '/reports', '/views', '/api', '/hod', '/coordinator', '/include', '/includes'];
+    foreach ($knownSubDirs as $sub) {
+        if (substr($dir, -strlen($sub)) === $sub) {
+            $dir = substr($dir, 0, -strlen($sub));
+        }
+    }
+    define('BASE_URL', rtrim(str_replace('\\', '/', $dir), '/'));
+}
+
+/**
+ * Generate full URL path relative to application root
+ */
+function url($path = '') {
+    $path = '/' . ltrim($path, '/');
+    return BASE_URL . $path;
+}
+
 /**
  * Sanitize user input
  */
@@ -65,23 +85,127 @@ function timeAgo($datetime) {
     return 'Just now';
 }
 
+require_once __DIR__ . '/email.php';
+
 /**
- * Create a notification for a user
+ * Create a notification for a user with event type and multi-channel support
  */
-function createNotification($userId, $title, $message, $type = 'info', $link = null) {
-    return dbInsert(
-        "INSERT INTO notifications (user_id, title, message, type, link) VALUES (?, ?, ?, ?, ?)",
-        'issss',
-        [$userId, $title, $message, $type, $link]
+function createNotification($userId, $title, $message, $type = 'info', $link = null, $eventType = null, $channel = 'portal') {
+    $emailStatus = 'sent';
+    
+    // Insert notification record
+    $id = dbInsert(
+        "INSERT INTO notifications (user_id, title, message, type, link, event_type, channel, email_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        'isssssss',
+        [$userId, $title, $message, $type, $link, $eventType, $channel, $emailStatus]
     );
+
+    // Send email alert for critical event types or when channel requires email/all
+    if (in_array($type, ['danger', 'warning']) || in_array($channel, ['email', 'all']) || in_array($eventType, ['password_changed', 'low_performance', 'missing_submission'])) {
+        $u = dbFetchOne("SELECT email FROM users WHERE id = ?", 'i', [$userId]);
+        if ($u && !empty($u['email'])) {
+            sendEmailAlert($u['email'], $title, $message, $link);
+        }
+    }
+
+    return $id;
 }
 
 /**
  * Create notifications for multiple users
  */
-function createBulkNotifications($userIds, $title, $message, $type = 'info', $link = null) {
+function createBulkNotifications($userIds, $title, $message, $type = 'info', $link = null, $eventType = null, $channel = 'portal') {
     foreach ($userIds as $uid) {
-        createNotification($uid, $title, $message, $type, $link);
+        createNotification($uid, $title, $message, $type, $link, $eventType, $channel);
+    }
+}
+
+/**
+ * Run automated system alert checks for:
+ * 1. Activity Deadline Reminders (Yellow - 24 hours before deadline)
+ * 2. Missing Activity Submissions (Red - Overdue activities)
+ */
+function runSystemAlertCheck() {
+    // 1. Deadline Reminders (Due within next 24 hours)
+    $upcomingActivities = dbFetchAll(
+        "SELECT a.*, s.name as subject_name 
+         FROM activities a 
+         JOIN subjects s ON a.subject_id = s.id 
+         WHERE a.status = 'active' 
+         AND a.deadline IS NOT NULL 
+         AND a.deadline BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 1 DAY)"
+    );
+
+    foreach ($upcomingActivities as $act) {
+        // Find enrolled students who have NOT submitted yet
+        $students = dbFetchAll(
+            "SELECT st.user_id 
+             FROM students st 
+             JOIN subject_students ss ON ss.student_id = st.id 
+             LEFT JOIN submissions sub ON sub.student_id = st.id AND sub.activity_id = ? 
+             WHERE ss.subject_id = ? AND sub.id IS NULL",
+            'ii', [$act['id'], $act['subject_id']]
+        );
+
+        foreach ($students as $s) {
+            // Check if reminder was already sent today
+            $alreadyNotified = dbFetchOne(
+                "SELECT id FROM notifications WHERE user_id = ? AND link = ? AND event_type = 'deadline_reminder' AND DATE(created_at) = CURDATE()",
+                'is', [$s['user_id'], '/student/activities.php']
+            );
+
+            if (!$alreadyNotified) {
+                createNotification(
+                    $s['user_id'],
+                    'Activity Deadline Reminder',
+                    sprintf('Reminder: "%s" for %s is due by %s.', $act['name'], $act['subject_name'], formatDate($act['deadline'])),
+                    'warning',
+                    '/student/activities.php',
+                    'deadline_reminder',
+                    'all'
+                );
+            }
+        }
+    }
+
+    // 2. Missing Submissions (Deadline passed, student hasn't submitted)
+    $overdueActivities = dbFetchAll(
+        "SELECT a.*, s.name as subject_name 
+         FROM activities a 
+         JOIN subjects s ON a.subject_id = s.id 
+         WHERE a.status IN ('active', 'completed') 
+         AND a.deadline IS NOT NULL 
+         AND a.deadline < CURDATE()"
+    );
+
+    foreach ($overdueActivities as $act) {
+        $missingStudents = dbFetchAll(
+            "SELECT st.user_id, st.id as student_id 
+             FROM students st 
+             JOIN subject_students ss ON ss.student_id = st.id 
+             LEFT JOIN submissions sub ON sub.student_id = st.id AND sub.activity_id = ? 
+             WHERE ss.subject_id = ? AND sub.id IS NULL",
+            'ii', [$act['id'], $act['subject_id']]
+        );
+
+        foreach ($missingStudents as $ms) {
+            $alreadyNotified = dbFetchOne(
+                "SELECT id FROM notifications WHERE user_id = ? AND event_type = 'missing_submission' AND link = ?",
+                'is', [$ms['user_id'], '/student/activities.php']
+            );
+
+            if (!$alreadyNotified) {
+                createNotification(
+                    $ms['user_id'],
+                    'Missing Activity Submission',
+                    sprintf('Overdue Alert: You have not submitted "%s" for %s.', $act['name'], $act['subject_name']),
+                    'danger',
+                    '/student/activities.php',
+                    'missing_submission',
+                    'all'
+                );
+            }
+        }
     }
 }
 

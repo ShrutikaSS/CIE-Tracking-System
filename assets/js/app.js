@@ -117,9 +117,9 @@ const Toast = {
   },
 
   success(msg, title) { this.show(msg, 'success', title); },
-  error(msg, title)   { this.show(msg, 'error', title); },
+  error(msg, title) { this.show(msg, 'error', title); },
   warning(msg, title) { this.show(msg, 'warning', title); },
-  info(msg, title)    { this.show(msg, 'info', title); }
+  info(msg, title) { this.show(msg, 'info', title); }
 };
 
 
@@ -130,7 +130,7 @@ const Modal = {
     if (!overlay) return;
     overlay.classList.add('open');
     document.body.style.overflow = 'hidden';
-    
+
     // Focus first input
     setTimeout(() => {
       const firstInput = overlay.querySelector('input, select, textarea');
@@ -143,11 +143,11 @@ const Modal = {
     if (!overlay) return;
     overlay.classList.remove('open');
     document.body.style.overflow = '';
-    
+
     // Reset form
     const form = overlay.querySelector('form');
     if (form) form.reset();
-    
+
     // Clear errors
     overlay.querySelectorAll('.form-error').forEach(el => el.classList.remove('show'));
     overlay.querySelectorAll('.form-control.error').forEach(el => el.classList.remove('error'));
@@ -264,7 +264,7 @@ const DataTable = {
     // Parse table data from tbody
     const tbody = table.querySelector('tbody');
     const headers = table.querySelectorAll('thead th');
-    
+
     // Make headers sortable
     headers.forEach((th, i) => {
       if (th.dataset.sortable === 'false') return;
@@ -296,17 +296,17 @@ const DataTable = {
     rows.sort((a, b) => {
       const aVal = a.cells[colIndex]?.textContent.trim() || '';
       const bVal = b.cells[colIndex]?.textContent.trim() || '';
-      
+
       // Try numeric sort
       const aNum = parseFloat(aVal);
       const bNum = parseFloat(bVal);
-      
+
       if (!isNaN(aNum) && !isNaN(bNum)) {
         return config.sortDir === 'asc' ? aNum - bNum : bNum - aNum;
       }
-      
-      return config.sortDir === 'asc' 
-        ? aVal.localeCompare(bVal) 
+
+      return config.sortDir === 'asc'
+        ? aVal.localeCompare(bVal)
         : bVal.localeCompare(aVal);
     });
 
@@ -315,8 +315,8 @@ const DataTable = {
       th.classList.toggle('sorted', i === colIndex);
       const icon = th.querySelector('.sort-icon');
       if (icon) {
-        icon.textContent = i === colIndex 
-          ? (config.sortDir === 'asc' ? '↑' : '↓') 
+        icon.textContent = i === colIndex
+          ? (config.sortDir === 'asc' ? '↑' : '↓')
           : '↕';
       }
     });
@@ -452,12 +452,15 @@ const Notifications = {
       list.innerHTML = data.notifications.map(n => `
         <div class="notification-item ${n.is_read == 0 ? 'unread' : ''}" 
              data-id="${n.id}"
-             onclick="Notifications.markRead(${n.id})">
+             onclick="Notifications.markRead(${n.id}, '${n.link ? n.link.replace(/'/g, "\\'") : ''}')">
           <div class="notification-item-icon stat-icon ${n.type === 'success' ? 'green' : n.type === 'warning' ? 'orange' : n.type === 'danger' ? 'red' : 'blue'}">
-            ${n.type === 'success' ? '✓' : n.type === 'warning' ? '⚠' : n.type === 'danger' ? '✕' : 'ℹ'}
+            ${n.type === 'success' ? '🟢' : n.type === 'warning' ? '🟡' : n.type === 'danger' ? '🔴' : '🔵'}
           </div>
           <div class="notification-item-content">
-            <div class="title">${this.escapeHtml(n.title)}</div>
+            <div class="title" style="display:flex; justify-content:space-between; align-items:center;">
+              <span>${this.escapeHtml(n.title)}</span>
+              ${n.event_type ? `<span class="badge ${n.type === 'danger' ? 'badge-danger' : n.type === 'warning' ? 'badge-warning' : n.type === 'success' ? 'badge-success' : 'badge-info'}" style="font-size:0.65rem; padding:1px 5px;">${this.escapeHtml(n.event_type.replace(/_/g, ' '))}</span>` : ''}
+            </div>
             <div class="message">${this.escapeHtml(n.message || '')}</div>
             <div class="time">${n.time_ago}</div>
           </div>
@@ -466,11 +469,12 @@ const Notifications = {
     }
   },
 
-  async markRead(id) {
+  async markRead(id, link) {
     await API.post('/api/notifications.php?action=read', { id });
     this.loadCount();
     const item = document.querySelector(`.notification-item[data-id="${id}"]`);
     if (item) item.classList.remove('unread');
+    if (link) window.location.href = link;
   },
 
   async markAllRead() {
@@ -720,10 +724,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Global Search functionality
   const globalSearch = document.getElementById('global-search');
   if (globalSearch) {
-    globalSearch.addEventListener('input', function(e) {
+    globalSearch.addEventListener('input', function (e) {
       const query = e.target.value.toLowerCase().trim();
       const searchTargets = document.querySelectorAll('tbody tr, .subject-card, .dept-card, .stat-card');
-      
+
       searchTargets.forEach(el => {
         const text = el.textContent.toLowerCase();
         if (text.includes(query)) {

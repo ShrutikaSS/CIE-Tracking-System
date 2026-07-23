@@ -55,20 +55,21 @@ requireRole(['student']);
     <div class="table-container">
       <table id="activities-table">
         <thead>
-          <tr>
+            <th data-sortable="true">Unit</th>
             <th data-sortable="true">Activity Name</th>
             <th data-sortable="true">Subject</th>
             <th data-sortable="true">Type</th>
             <th data-sortable="true">Max Marks</th>
-            <th data-sortable="true">Activity Date</th>
-            <th data-sortable="true">Deadline</th>
+            <th data-sortable="true">Window</th>
+            <th data-sortable="true">Auto Status</th>
             <th data-sortable="true">Status</th>
             <th data-sortable="true">Submission</th>
+            <th data-sortable="true">Marks Obtained</th>
             <th data-sortable="false">Actions</th>
           </tr>
         </thead>
         <tbody id="activities-tbody">
-          <tr><td colspan="9" class="text-center"><div class="spinner spinner-sm" style="margin:20px auto;"></div></td></tr>
+          <tr><td colspan="10" class="text-center"><div class="spinner spinner-sm" style="margin:20px auto;"></div></td></tr>
         </tbody>
       </table>
     </div>
@@ -114,76 +115,174 @@ requireRole(['student']);
 
 <!-- Submit Activity Modal -->
 <div class="modal-overlay" id="modal-submit-activity">
-  <div class="modal" style="max-width:550px;">
-    <div class="modal-header">
-      <h3 id="submit-modal-title">Submit Activity</h3>
-      <button class="modal-close" onclick="Modal.close('modal-submit-activity')">✕</button>
+  <div class="modal" style="max-width:540px; border-radius:12px; overflow:hidden;">
+    <div class="modal-header" style="padding:18px 24px; border-bottom:1px solid var(--border-color); display:flex; align-items:center; justify-content:space-between;">
+      <h3 id="submit-modal-title" style="margin:0; font-size:1.1rem; font-weight:700;">Submit Activity</h3>
+      <button class="modal-close" onclick="Modal.close('modal-submit-activity')" style="background:none; border:none; cursor:pointer; color:var(--text-muted); font-size:1.2rem; padding:4px; border-radius:4px; line-height:1;">✕</button>
     </div>
     <form id="submit-activity-form" onsubmit="handleActivitySubmit(event)">
       <input type="hidden" id="submit-activity-id" name="activity_id">
-      <div class="modal-body">
-        <!-- Info card -->
-        <div class="card mb-3" style="background:var(--bg-light); border:1px solid var(--border-color); padding:12px; border-radius:6px; margin-bottom:15px;">
-          <div style="font-size:0.8rem; color:var(--text-muted); text-transform:uppercase; font-weight:600;">Activity</div>
-          <div id="submit-info-name" style="font-weight:700; font-size:1.1rem; color:var(--text-primary); margin-top:2px;">—</div>
-          <div style="display:flex; gap:16px; margin-top:8px; font-size:0.875rem;">
-            <div><strong>Type:</strong> <span id="submit-info-type">—</span></div>
-            <div><strong>Max Marks:</strong> <span id="submit-info-max-marks">—</span></div>
+      <div class="modal-body" style="padding:20px 24px; max-height:65vh; overflow-y:auto;">
+
+        <!-- Activity Info Card -->
+        <div style="background:var(--bg-light); border:1px solid var(--border-color); border-radius:8px; padding:14px 16px; margin-bottom:18px;">
+          <div style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; font-weight:700; letter-spacing:0.05em; margin-bottom:4px;">ACTIVITY</div>
+          <div id="submit-info-name" style="font-weight:700; font-size:1.05rem; color:var(--text-primary); margin-bottom:8px;">—</div>
+          <div style="display:flex; gap:20px; font-size:0.83rem; color:var(--text-secondary);">
+            <div><span style="font-weight:600; color:var(--text-muted);">Type:</span> <span id="submit-info-type" style="font-weight:600; color:var(--text-primary);">—</span></div>
+            <div><span style="font-weight:600; color:var(--text-muted);">Max Marks:</span> <span id="submit-info-max-marks" style="font-weight:600; color:var(--primary);">—</span></div>
           </div>
         </div>
 
-        <!-- Submission details if already submitted -->
-        <div id="already-submitted-view" style="display:none; margin-bottom:20px; border-left:4px solid var(--success); padding-left:12px; background:rgba(46, 204, 113, 0.05); padding-top:8px; padding-bottom:8px; border-radius:4px;">
-          <div style="font-weight:600; color:var(--success); font-size:0.9rem;">Previous Submission:</div>
-          <div style="margin-top:6px; font-size:0.875rem;">
-            <strong>Submitted on:</strong> <span id="prev-submitted-at">—</span>
+        <!-- Already submitted view -->
+        <div id="already-submitted-view" style="display:none; margin-bottom:18px; border-left:3px solid var(--success); padding:10px 14px; background:rgba(46,204,113,0.06); border-radius:0 6px 6px 0;">
+          <div style="font-weight:700; color:var(--success); font-size:0.85rem; margin-bottom:6px;">✓ Previous Submission</div>
+          <div style="font-size:0.83rem; color:var(--text-secondary); margin-bottom:4px;">
+            <span style="font-weight:600;">Submitted on:</span> <span id="prev-submitted-at">—</span>
           </div>
-          <div id="prev-file-container" style="margin-top:6px; font-size:0.875rem; display:none;">
-            <strong>File:</strong> <a id="prev-file-link" href="#" target="_blank" style="color:var(--primary); font-weight:600; text-decoration:underline;">View Submitted File</a>
+          <div id="prev-file-container" style="display:none; font-size:0.83rem; color:var(--text-secondary); margin-bottom:4px;">
+            <span style="font-weight:600;">File:</span>
+            <a id="prev-file-link" href="#" target="_blank" style="color:var(--primary); font-weight:600; text-decoration:none; margin-left:4px;">📄 View Submitted File</a>
           </div>
-          <div id="prev-text-container" style="margin-top:6px; font-size:0.875rem; display:none;">
-            <strong>Your Answers / Comments:</strong>
-            <p id="prev-text-content" style="background:var(--bg-input); padding:8px; border-radius:4px; margin-top:4px; white-space:pre-wrap; border:1px solid var(--border-color);"></p>
+          <div id="prev-text-container" style="display:none; font-size:0.83rem; margin-top:8px;">
+            <div style="font-weight:600; color:var(--text-secondary); margin-bottom:4px;">Your notes:</div>
+            <p id="prev-text-content" style="background:var(--bg-input,#f5f5f5); padding:8px 10px; border-radius:5px; margin:0; white-space:pre-wrap; border:1px solid var(--border-color); font-size:0.83rem; line-height:1.5;"></p>
           </div>
-          
-          <button type="button" class="btn btn-sm btn-outline" id="btn-show-submit-form" onclick="toggleSubmissionForm(true)" style="margin-top:12px;">
-            Update Submission / Resubmit
+          <button type="button" class="btn btn-sm btn-outline" id="btn-show-submit-form" onclick="toggleSubmissionForm(true)" style="margin-top:12px; font-size:0.8rem;">
+            ✏️ Update / Resubmit
           </button>
         </div>
 
-        <!-- Form fields (dynamic based on type) -->
+        <!-- Form Fields -->
         <div id="submission-form-fields">
-          <!-- Text answers for quizzes, or optional comments for assignments -->
-          <div class="form-group" id="text-submission-group" style="margin-bottom:15px;">
-            <label id="text-submission-label" style="font-weight:600; display:block; margin-bottom:6px;">Submission Text / Comments</label>
-            <textarea class="form-control" id="submission-text-input" name="submission_text" rows="5" placeholder="Enter your text here..."></textarea>
+          <!-- Comments / Text -->
+          <div class="form-group" style="margin-bottom:16px;">
+            <label id="text-submission-label" style="display:block; font-weight:600; font-size:0.85rem; color:var(--text-primary); margin-bottom:6px;">Comments / Notes <span style="font-weight:400; color:var(--text-muted);">(Optional)</span></label>
+            <textarea
+              class="form-control"
+              id="submission-text-input"
+              name="submission_text"
+              rows="4"
+              placeholder="Add any notes or comments for the faculty..."
+              style="resize:vertical; font-size:0.875rem; line-height:1.5; border-radius:7px; padding:10px 12px;"
+            ></textarea>
           </div>
 
-          <!-- File upload -->
-          <div class="form-group" id="file-submission-group" style="margin-bottom:15px;">
-            <label id="file-submission-label" style="font-weight:600; display:block; margin-bottom:6px;">Upload File (PDF or JPG/PNG image)</label>
-            <input type="file" class="form-control" id="submission-file-input" name="submission_file" accept=".pdf,.jpg,.jpeg,.png">
-            <small class="text-muted" style="display:block; margin-top:4px; color:var(--text-muted);">Maximum file size: 5MB. Formats: PDF, JPG, JPEG, PNG.</small>
+          <!-- File Upload -->
+          <div class="form-group" style="margin-bottom:4px;">
+            <label id="file-submission-label" style="display:block; font-weight:600; font-size:0.85rem; color:var(--text-primary); margin-bottom:8px;">Upload Submission File <span id="file-required-badge" style="font-size:0.75rem; color:var(--danger); font-weight:500;">(Required)</span></label>
+
+            <!-- Custom file upload zone -->
+            <label for="submission-file-input" id="file-drop-zone" style="
+              display:flex; flex-direction:column; align-items:center; justify-content:center;
+              border:2px dashed var(--border-color); border-radius:8px; padding:20px 16px;
+              cursor:pointer; transition:border-color 0.2s, background 0.2s;
+              background:var(--bg-light,#f9f9f9); text-align:center; gap:6px;
+            "
+              onmouseover="this.style.borderColor='var(--primary)'; this.style.background='rgba(26,115,232,0.04)'"
+              onmouseout="this.style.borderColor='var(--border-color)'; this.style.background='var(--bg-light,#f9f9f9)'"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              <div id="file-drop-label" style="font-size:0.85rem; color:var(--text-secondary); font-weight:500;">
+                <span style="color:var(--primary); font-weight:600;">Click to upload</span> or drag & drop
+              </div>
+              <div style="font-size:0.75rem; color:var(--text-muted);">PDF, JPG, JPEG, PNG — max 5MB</div>
+            </label>
+            <input
+              type="file"
+              id="submission-file-input"
+              name="submission_file"
+              accept=".pdf,.jpg,.jpeg,.png"
+              style="display:none;"
+              onchange="updateFileLabel(this)"
+            >
           </div>
         </div>
+
       </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" onclick="Modal.close('modal-submit-activity')">Cancel</button>
-        <button type="submit" class="btn btn-primary" id="btn-submit-action">Submit</button>
+      <div class="modal-footer" style="padding:14px 24px; border-top:1px solid var(--border-color); display:flex; align-items:center; justify-content:flex-end; gap:10px;">
+        <button type="button" class="btn btn-secondary" onclick="Modal.close('modal-submit-activity')" style="min-width:90px;">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="btn-submit-action" style="min-width:110px; display:flex; align-items:center; gap:6px;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+          Submit
+        </button>
       </div>
     </form>
   </div>
 </div>
 
+
 <script>
+// Update file drop zone label when a file is selected
+window.updateFileLabel = (input) => {
+  const zone = document.getElementById('file-drop-zone');
+  const label = document.getElementById('file-drop-label');
+  if (input.files && input.files[0]) {
+    const f = input.files[0];
+    const sizeMB = (f.size / (1024 * 1024)).toFixed(2);
+    label.innerHTML = `<span style="color:var(--success); font-weight:700;">✓ ${f.name}</span> <span style="color:var(--text-muted); font-weight:400;">(${sizeMB} MB)</span>`;
+    zone.style.borderColor = 'var(--success)';
+    zone.style.background = 'rgba(46,204,113,0.05)';
+  } else {
+    label.innerHTML = `<span style="color:var(--primary); font-weight:600;">Click to upload</span> or drag & drop`;
+    zone.style.borderColor = 'var(--border-color)';
+    zone.style.background = 'var(--bg-light,#f9f9f9)';
+  }
+};
+
 document.addEventListener('DOMContentLoaded', async () => {
   let allActivities = [];
+
+  // Drag-and-drop support for file upload zone
+  const dropZone = document.getElementById('file-drop-zone');
+  const fileInput = document.getElementById('submission-file-input');
+  if (dropZone && fileInput) {
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.style.borderColor = 'var(--primary)';
+      dropZone.style.background = 'rgba(26,115,232,0.07)';
+    });
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.style.borderColor = 'var(--border-color)';
+      dropZone.style.background = 'var(--bg-light,#f9f9f9)';
+    });
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      if (e.dataTransfer.files.length) {
+        fileInput.files = e.dataTransfer.files;
+        updateFileLabel(fileInput);
+      }
+    });
+  }
+
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '—';
     const d = new Date(dateStr);
     if (isNaN(d.getTime())) return dateStr;
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+  
+  const formatDateTime = (dateStr) => {
+    if (!dateStr) return '—';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  };
+  
+  const getCountdown = (endTime) => {
+    if (!endTime) return '';
+    const now = new Date().getTime();
+    const end = new Date(endTime).getTime();
+    const diff = end - now;
+    if (diff <= 0) return '<small class="text-danger">Ended</small>';
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    return `<small class="text-warning">Ends in ${hours}h ${mins}m</small>`;
   };
 
   // Load filter options
@@ -221,14 +320,35 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
       }
 
-      tbody.innerHTML = allActivities.map(a => `
+      tbody.innerHTML = allActivities.map(a => {
+        let marksDisplay = '<span class="text-muted" style="font-size:0.85rem;">—</span>';
+        if (a.is_marks_published == 1 && a.marks_obtained !== null) {
+          const score = parseFloat(a.marks_obtained).toFixed(1);
+          const max = parseFloat(a.max_marks).toFixed(1);
+          const pct = max > 0 ? ((score / max) * 100).toFixed(1) : 0;
+          const badgeClass = pct >= 75 ? 'badge-success' : pct >= 40 ? 'badge-primary' : 'badge-danger';
+          marksDisplay = `<div style="display:flex; flex-direction:column; gap:2px;">
+            <span class="badge ${badgeClass}" style="font-size:0.85rem; font-weight:700;">${score} / ${max}</span>
+            <small style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">${pct}%</small>
+          </div>`;
+        } else if (a.submission_id) {
+          marksDisplay = `<span class="badge badge-warning" style="font-size:0.75rem; padding:4px 8px;">⏳ Under Review</span>`;
+        }
+
+        const autoStatusClass = { NOT_STARTED: 'badge-secondary', ACTIVE: 'badge-success', CLOSED: 'badge-danger' };
+        return `
         <tr>
+          <td><span class="badge badge-secondary">Unit ${a.unit_no}</span></td>
           <td><strong>${a.name}</strong></td>
           <td>${a.subject_code} - ${a.subject_name}</td>
           <td><span class="badge badge-primary">${a.type}</span></td>
           <td><strong>${parseFloat(a.max_marks).toFixed(1)}</strong></td>
-          <td>${formatDate(a.activity_date)}</td>
-          <td>${formatDate(a.deadline)}</td>
+          <td style="font-size:0.8rem">
+            <div><span style="color:var(--success)">▶</span> ${formatDateTime(a.start_time)}</div>
+            <div><span style="color:var(--danger)">⏹</span> ${formatDateTime(a.end_time)}</div>
+            ${a.auto_status === 'ACTIVE' ? getCountdown(a.end_time) : ''}
+          </td>
+          <td><span class="badge ${autoStatusClass[a.auto_status] || 'badge-secondary'}">${a.auto_status}</span></td>
           <td><span class="badge ${a.status === 'completed' ? 'badge-success' : 'badge-primary'}">${a.status}</span></td>
           <td>
             ${a.submission_id 
@@ -238,6 +358,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                  </span>` 
               : `<span class="badge badge-secondary">Not Submitted</span>`}
           </td>
+          <td>${marksDisplay}</td>
           <td>
             <div style="display:flex; gap:6px; flex-wrap:wrap;">
               <button class="btn btn-sm btn-secondary" style="display:inline-flex; align-items:center; gap:6px;" onclick="viewDetails(${a.id})">
@@ -256,10 +377,10 @@ document.addEventListener('DOMContentLoaded', async () => {
               }
             </div>
           </td>
-        </tr>
-      `).join('');
+        </tr>`;
+      }).join('');
     } else {
-      tbody.innerHTML = '<tr><td colspan="9" class="text-center text-danger" style="padding:20px;">Failed to load activities.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="10" class="text-center text-danger" style="padding:20px;">Failed to load activities.</td></tr>';
     }
   };
 
@@ -294,6 +415,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Reset form
     document.getElementById('submit-activity-form').reset();
+    // Reset custom file drop zone
+    const dz = document.getElementById('file-drop-zone');
+    const dzLabel = document.getElementById('file-drop-label');
+    if (dz && dzLabel) {
+      dzLabel.innerHTML = `<span style="color:var(--primary); font-weight:600;">Click to upload</span> or drag & drop`;
+      dz.style.borderColor = 'var(--border-color)';
+      dz.style.background = 'var(--bg-light,#f9f9f9)';
+    }
     document.getElementById('submit-activity-id').value = a.id;
     document.getElementById('submit-info-name').textContent = a.name;
     document.getElementById('submit-info-type').textContent = a.type.toUpperCase();

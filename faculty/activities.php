@@ -50,12 +50,13 @@ requireRole(['admin', 'hod', 'faculty', 'coordinator']);
       <table id="act-table" data-sortable>
         <thead>
           <tr>
+            <th>Unit</th>
             <th>Activity</th>
             <th>Subject</th>
             <th>Type</th>
             <th>Max Marks</th>
-            <th>Date</th>
-            <th>Deadline</th>
+            <th>Time Window</th>
+            <th>Auto Status</th>
             <th>Status</th>
             <th>Marks</th>
             <th data-sortable="false">Actions</th>
@@ -93,6 +94,19 @@ requireRole(['admin', 'hod', 'faculty', 'coordinator']);
             <div class="form-error"></div>
           </div>
           <div class="form-group">
+            <label>Unit No (1-6) *</label>
+            <select class="form-control" id="act-unit" data-required>
+              <option value="1">Unit 1</option>
+              <option value="2">Unit 2</option>
+              <option value="3">Unit 3</option>
+              <option value="4">Unit 4</option>
+              <option value="5">Unit 5</option>
+              <option value="6">Unit 6</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
             <label>Activity Type *</label>
             <select class="form-control" id="act-type" data-required>
               <option value="assignment">📝 Assignment</option>
@@ -110,7 +124,7 @@ requireRole(['admin', 'hod', 'faculty', 'coordinator']);
         <div class="form-row">
           <div class="form-group">
             <label>Max Marks *</label>
-            <input type="number" class="form-control" id="act-maxmarks" data-required data-min="1" value="20" step="0.5">
+            <input type="number" class="form-control" id="act-maxmarks" data-required data-min="1" value="10" step="0.5">
             <div class="form-error"></div>
           </div>
           <div class="form-group">
@@ -124,12 +138,12 @@ requireRole(['admin', 'hod', 'faculty', 'coordinator']);
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label>Activity Date</label>
-            <input type="date" class="form-control" id="act-date">
+            <label>Start Time</label>
+            <input type="datetime-local" class="form-control" id="act-starttime">
           </div>
           <div class="form-group">
-            <label>Deadline</label>
-            <input type="date" class="form-control" id="act-deadline">
+            <label>End Time</label>
+            <input type="datetime-local" class="form-control" id="act-endtime">
           </div>
         </div>
         <div class="form-group">
@@ -148,6 +162,7 @@ requireRole(['admin', 'hod', 'faculty', 'coordinator']);
 <script>
 const typeIcons = { assignment: '📝', quiz: '❓', test: '📋', seminar: '🎤', viva: '🗣️', practical: '🔬', project_review: '🔍', presentation: '📽️' };
 const statusClass = { draft: 'badge-secondary', active: 'badge-primary', completed: 'badge-success', cancelled: 'badge-danger' };
+const autoStatusClass = { NOT_STARTED: 'badge-secondary', ACTIVE: 'badge-success', CLOSED: 'badge-danger', draft: 'badge-secondary', cancelled: 'badge-danger' };
 
 async function loadSubjectOptions() {
   const res = await API.get('/api/subjects.php?for_faculty=1');
@@ -187,20 +202,24 @@ async function loadActivities() {
   
   tbody.innerHTML = res.activities.map(a => {
     const marksInfo = `${a.marks_entered}/${a.total_students}`;
-    const formatDate = d => d ? new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
+    const formatDateTime = d => d ? new Date(d).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—';
     
     return `<tr>
+      <td><span class="badge badge-secondary">Unit ${a.unit_no}</span></td>
       <td><strong>${a.name}</strong></td>
       <td><span class="badge badge-info">${a.subject_code}</span></td>
       <td><span class="activity-type">${typeIcons[a.type] || '📌'} ${a.type}</span></td>
       <td>${parseFloat(a.max_marks).toFixed(0)}</td>
-      <td class="text-muted">${formatDate(a.activity_date)}</td>
-      <td class="text-muted">${formatDate(a.deadline)}</td>
+      <td class="text-muted" style="font-size:0.8rem">
+        <div><span style="color:var(--success)">▶</span> ${formatDateTime(a.start_time)}</div>
+        <div><span style="color:var(--danger)">⏹</span> ${formatDateTime(a.end_time)}</div>
+      </td>
+      <td><span class="badge ${autoStatusClass[a.auto_status] || 'badge-secondary'}">${a.auto_status}</span></td>
       <td><span class="badge ${statusClass[a.status] || 'badge-secondary'}">${a.status}</span></td>
       <td>${marksInfo}</td>
       <td>
         <button class="btn btn-sm btn-secondary" onclick="editActivity(${a.id})">✏️</button>
-        <a href="/faculty/marks.php?activity=${a.id}" class="btn btn-sm btn-outline">📊 Marks</a>
+        <a href="/faculty/marks.php?activity=${a.id}" class="btn btn-sm btn-primary">📊 Review & Grade</a>
         <button class="btn btn-sm btn-danger" onclick="deleteActivity(${a.id}, '${a.name.replace(/'/g, "\\'")}')">🗑️</button>
       </td>
     </tr>`;
@@ -222,11 +241,12 @@ async function editActivity(id) {
   document.getElementById('act-id').value = a.id;
   document.getElementById('act-name').value = a.name;
   document.getElementById('act-subject').value = a.subject_id;
+  document.getElementById('act-unit').value = a.unit_no || 1;
   document.getElementById('act-type').value = a.type;
   document.getElementById('act-maxmarks').value = a.max_marks;
   document.getElementById('act-status').value = a.status;
-  document.getElementById('act-date').value = a.activity_date || '';
-  document.getElementById('act-deadline').value = a.deadline || '';
+  document.getElementById('act-starttime').value = a.start_time ? a.start_time.substring(0, 16) : '';
+  document.getElementById('act-endtime').value = a.end_time ? a.end_time.substring(0, 16) : '';
   document.getElementById('act-desc').value = a.description || '';
   Modal.open('modal-activity');
 }
@@ -237,11 +257,12 @@ async function saveActivity() {
   const data = {
     name: document.getElementById('act-name').value.trim(),
     subject_id: document.getElementById('act-subject').value,
+    unit_no: document.getElementById('act-unit').value,
     type: document.getElementById('act-type').value,
     max_marks: document.getElementById('act-maxmarks').value,
     status: document.getElementById('act-status').value,
-    activity_date: document.getElementById('act-date').value || null,
-    deadline: document.getElementById('act-deadline').value || null,
+    start_time: document.getElementById('act-starttime').value ? document.getElementById('act-starttime').value.replace('T', ' ') + ':00' : null,
+    end_time: document.getElementById('act-endtime').value ? document.getElementById('act-endtime').value.replace('T', ' ') + ':00' : null,
     description: document.getElementById('act-desc').value.trim()
   };
   const res = id ? await API.put('/api/activities.php', { ...data, id: parseInt(id) })

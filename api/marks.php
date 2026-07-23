@@ -4,6 +4,7 @@
  */
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/cie_marks.php';
 
 requireLogin();
 header('Content-Type: application/json');
@@ -72,6 +73,37 @@ switch ($method) {
                 'i', [$activityId]
             );
             jsonResponse(['success' => true, 'marks' => $marks]);
+        }
+        
+        if ($action === 'cie_summary') {
+            $subjectId = (int)($_GET['subject_id'] ?? 0);
+            if (!$subjectId) jsonResponse(['success' => false, 'message' => 'Subject ID required.'], 400);
+            
+            // Get all students enrolled in subject
+            $students = dbFetchAll(
+                "SELECT s.id as student_id, u.name as student_name, s.usn
+                 FROM students s
+                 JOIN users u ON s.user_id = u.id
+                 JOIN subject_students ss ON ss.student_id = s.id
+                 WHERE ss.subject_id = ?
+                 ORDER BY s.usn",
+                'i', [$subjectId]
+            );
+            
+            $summary = [];
+            foreach ($students as $stu) {
+                $totalMarks = getTotalActivityMarks($stu['student_id'], $subjectId);
+                $cieMarks = convertToCIE($totalMarks);
+                
+                $summary[] = [
+                    'student_id' => $stu['student_id'],
+                    'student_name' => $stu['student_name'],
+                    'usn' => $stu['usn'],
+                    'total_out_of_60' => $totalMarks,
+                    'cie_out_of_20' => $cieMarks
+                ];
+            }
+            jsonResponse(['success' => true, 'summary' => $summary]);
         }
         
         jsonResponse(['success' => false, 'message' => 'Invalid action.'], 400);
@@ -257,6 +289,39 @@ switch ($method) {
             }
             
             jsonResponse(['success' => true, 'message' => 'Marks published and notifications dispatched.']);
+        }
+        
+        if ($action === 'auto_fill') {
+            $data = getJsonBody();
+            $activityId = (int)($data['activity_id'] ?? 0);
+            if (!$activityId) jsonResponse(['success' => false, 'message' => 'Activity ID required.'], 400);
+            
+            $activity = dbFetchOne("SELECT max_marks FROM activities WHERE id = ?", 'i', [$activityId]);
+            if (!$activity) jsonResponse(['success' => false, 'message' => 'Activity not found.'], 404);
+            
+            // Fetch all submissions for this activity
+            $submissions = dbFetchAll("SELECT student_id, marks_awarded FROM submissions WHERE activity_id = ?", 'i', [$activityId]);
+            
+            $filled = 0;
+            foreach ($submissions as $sub) {
+                if ($sub['marks_awarded'] !== null) {
+                    $existing = dbFetchOne("SELECT id FROM marks WHERE activity_id = ? AND student_id = ?", 'ii', [$activityId, $sub['student_id']]);
+                    if ($existing) {
+                        dbExecute(
+                            "UPDATE marks SET marks_obtained = ?, entered_by = ? WHERE id = ?",
+                            'dii', [$sub['marks_awarded'], $user['id'], $existing['id']]
+                        );
+                    } else {
+                        dbInsert(
+                            "INSERT INTO marks (activity_id, student_id, marks_obtained, entered_by) VALUES (?, ?, ?, ?)",
+                            'iidi', [$activityId, $sub['student_id'], $sub['marks_awarded'], $user['id']]
+                        );
+                    }
+                    $filled++;
+                }
+            }
+            
+            jsonResponse(['success' => true, 'message' => "Auto-filled marks for $filled student(s).", 'filled' => $filled]);
         }
         
         jsonResponse(['success' => false, 'message' => 'Invalid action.'], 400);

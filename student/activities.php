@@ -55,13 +55,13 @@ requireRole(['student']);
     <div class="table-container">
       <table id="activities-table">
         <thead>
-          <tr>
+            <th data-sortable="true">Unit</th>
             <th data-sortable="true">Activity Name</th>
             <th data-sortable="true">Subject</th>
             <th data-sortable="true">Type</th>
             <th data-sortable="true">Max Marks</th>
-            <th data-sortable="true">Activity Date</th>
-            <th data-sortable="true">Deadline</th>
+            <th data-sortable="true">Window</th>
+            <th data-sortable="true">Auto Status</th>
             <th data-sortable="true">Status</th>
             <th data-sortable="true">Submission</th>
             <th data-sortable="true">Marks Obtained</th>
@@ -266,6 +266,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (isNaN(d.getTime())) return dateStr;
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
+  
+  const formatDateTime = (dateStr) => {
+    if (!dateStr) return '—';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  };
+  
+  const getCountdown = (endTime) => {
+    if (!endTime) return '';
+    const now = new Date().getTime();
+    const end = new Date(endTime).getTime();
+    const diff = end - now;
+    if (diff <= 0) return '<small class="text-danger">Ended</small>';
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    return `<small class="text-warning">Ends in ${hours}h ${mins}m</small>`;
+  };
 
   // Load filter options
   const subRes = await API.get('/api/subjects.php');
@@ -317,14 +335,20 @@ document.addEventListener('DOMContentLoaded', async () => {
           marksDisplay = `<span class="badge badge-warning" style="font-size:0.75rem; padding:4px 8px;">⏳ Under Review</span>`;
         }
 
+        const autoStatusClass = { NOT_STARTED: 'badge-secondary', ACTIVE: 'badge-success', CLOSED: 'badge-danger' };
         return `
         <tr>
+          <td><span class="badge badge-secondary">Unit ${a.unit_no}</span></td>
           <td><strong>${a.name}</strong></td>
           <td>${a.subject_code} - ${a.subject_name}</td>
           <td><span class="badge badge-primary">${a.type}</span></td>
           <td><strong>${parseFloat(a.max_marks).toFixed(1)}</strong></td>
-          <td>${formatDate(a.activity_date)}</td>
-          <td>${formatDate(a.deadline)}</td>
+          <td style="font-size:0.8rem">
+            <div><span style="color:var(--success)">▶</span> ${formatDateTime(a.start_time)}</div>
+            <div><span style="color:var(--danger)">⏹</span> ${formatDateTime(a.end_time)}</div>
+            ${a.auto_status === 'ACTIVE' ? getCountdown(a.end_time) : ''}
+          </td>
+          <td><span class="badge ${autoStatusClass[a.auto_status] || 'badge-secondary'}">${a.auto_status}</span></td>
           <td><span class="badge ${a.status === 'completed' ? 'badge-success' : 'badge-primary'}">${a.status}</span></td>
           <td>
             ${a.submission_id 

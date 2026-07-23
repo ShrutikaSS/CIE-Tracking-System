@@ -53,7 +53,15 @@ $initials = strtoupper(substr($profile['name'], 0, 1) . substr(strrchr($profile[
       <h3>Profile Details</h3>
     </div>
     <div class="card-body" style="padding: 24px;">
-      <div style="display:grid; grid-template-columns: 1fr 2fr; gap: 20px; font-size: 0.95rem;">
+<style>
+@media (max-width: 600px) {
+  .profile-detail-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+}
+</style>
+      <div class="profile-detail-grid" style="display:grid; grid-template-columns: 1fr 2fr; gap: 20px; font-size: 0.95rem;">
         <div style="font-weight: 600; color: var(--text-muted);">Employee ID</div>
         <div><span class="badge badge-info"><?=$profile['employee_id'] ?: '—'?></span></div>
         

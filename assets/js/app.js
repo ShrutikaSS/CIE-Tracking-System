@@ -175,9 +175,11 @@ document.addEventListener('keydown', (e) => {
 
 // ── Sidebar Toggle ──
 const Sidebar = {
+  overlay: null,
+
   init() {
     const saved = localStorage.getItem('sidebar-collapsed');
-    if (saved === 'true') {
+    if (saved === 'true' && window.innerWidth > 900) {
       document.body.classList.add('sidebar-collapsed');
     }
 
@@ -189,12 +191,35 @@ const Sidebar = {
         item.classList.add('active');
       }
     });
+
+    // Create overlay for mobile sidebar
+    this.overlay = document.createElement('div');
+    this.overlay.className = 'sidebar-overlay';
+    document.body.appendChild(this.overlay);
+    this.overlay.addEventListener('click', () => this.closeMobile());
   },
 
   toggle() {
-    document.body.classList.toggle('sidebar-collapsed');
-    const collapsed = document.body.classList.contains('sidebar-collapsed');
-    localStorage.setItem('sidebar-collapsed', collapsed);
+    if (window.innerWidth <= 900) {
+      // Mobile/Tablet: slide sidebar in/out
+      const isOpen = document.body.classList.contains('sidebar-open');
+      if (isOpen) {
+        this.closeMobile();
+      } else {
+        document.body.classList.add('sidebar-open');
+        this.overlay.classList.add('active');
+      }
+    } else {
+      // Desktop: collapse/expand sidebar
+      document.body.classList.toggle('sidebar-collapsed');
+      const collapsed = document.body.classList.contains('sidebar-collapsed');
+      localStorage.setItem('sidebar-collapsed', collapsed);
+    }
+  },
+
+  closeMobile() {
+    document.body.classList.remove('sidebar-open');
+    if (this.overlay) this.overlay.classList.remove('active');
   }
 };
 

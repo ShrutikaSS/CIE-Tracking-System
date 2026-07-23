@@ -820,7 +820,7 @@ if (isLoggedIn()) {
           
           <div style="display: flex; flex-wrap: wrap; gap: 8px;">
             <button type="button" class="btn btn-sm btn-secondary" onclick="fillDemoTyping('admin@cie.edu', 'Admin')" style="font-size:0.75rem; padding: 6px 12px; border-radius: 4px; text-transform:none; font-weight: 500;">Admin</button>
-            <button type="button" class="btn btn-sm btn-secondary" onclick="fillDemoTyping('hod.cse@cie.edu', 'HOD')" style="font-size:0.75rem; padding: 6px 12px; border-radius: 4px; text-transform:none; font-weight: 500;">HOD (CSE)</button>
+            <button type="button" class="btn btn-sm btn-secondary" onclick="fillDemoTyping('hod.cse@cie.edu', 'HOD')" style="font-size:0.75rem; padding: 6px 12px; border-radius: 4px; text-transform:none; font-weight: 500;">HOD</button>
             <button type="button" class="btn btn-sm btn-secondary" onclick="fillDemoTyping('anil.mehta@cie.edu', 'Faculty')" style="font-size:0.75rem; padding: 6px 12px; border-radius: 4px; text-transform:none; font-weight: 500;">Faculty</button>
             <button type="button" class="btn btn-sm btn-secondary" onclick="fillDemoTyping('sneha.patil@cie.edu', 'Coordinator')" style="font-size:0.75rem; padding: 6px 12px; border-radius: 4px; text-transform:none; font-weight: 500;">Coordinator</button>
             <button type="button" class="btn btn-sm btn-secondary" onclick="fillDemoTyping('rahul.verma@cie.edu', 'Student')" style="font-size:0.75rem; padding: 6px 12px; border-radius: 4px; text-transform:none; font-weight: 500;">Student</button>

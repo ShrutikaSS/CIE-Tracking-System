@@ -50,6 +50,7 @@ switch ($action) {
         
         $hashed = password_hash($newPw, PASSWORD_DEFAULT);
         dbExecute("UPDATE users SET password = ? WHERE id = ?", 'si', [$hashed, $user['id']]);
+        createNotification($user['id'], 'Password Changed', 'Your password has been successfully updated.', 'success');
         
         jsonResponse(['success' => true, 'message' => 'Password updated successfully.']);
         break;

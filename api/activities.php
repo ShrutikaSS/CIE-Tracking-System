@@ -56,6 +56,14 @@ switch ($method) {
             $types .= 'i';
             $params[] = $user['department_id'];
         }
+
+        if ($user['role'] === 'student') {
+            $stu = dbFetchOne("SELECT id FROM students WHERE user_id = ?", 'i', [$user['id']]);
+            $stuId = $stu ? $stu['id'] : 0;
+            $sql .= " AND s.id IN (SELECT subject_id FROM subject_students WHERE student_id = ?) AND a.status IN ('active', 'completed')";
+            $types .= 'i';
+            $params[] = $stuId;
+        }
         
         if ($subjectId) {
             $sql .= " AND a.subject_id = ?";

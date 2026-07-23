@@ -2111,3 +2111,147 @@ body.dark-theme {
   --border-color: #333333;
   --border-light: #2a2a2a;
 }
+
+/* ── Touch & Mobile/Tablet/iOS Responsiveness Enhancements ── */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.table-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: var(--radius-sm);
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 12px;
+  }
+
+  .page-header .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .page-header .actions .btn {
+    flex: 1;
+    min-width: 140px;
+    justify-content: center;
+  }
+
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    gap: 10px;
+  }
+
+  .filter-bar select.form-control,
+  .filter-bar .search-filter {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+  }
+
+  .btn {
+    min-height: 44px;
+    padding: 10px 16px;
+    font-size: 0.9rem;
+  }
+
+  .form-control {
+    min-height: 44px;
+    font-size: 0.95rem;
+  }
+
+  .modal {
+    width: 95vw !important;
+    max-width: 95vw !important;
+    max-height: 90vh;
+    border-radius: var(--radius-md);
+    margin: 10px;
+  }
+
+  .modal-body {
+    max-height: calc(80vh - 120px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 16px;
+  }
+
+  .modal-footer {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px 16px;
+  }
+
+  .modal-footer .btn {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .table-container table th,
+  .table-container table td {
+    padding: 10px 12px;
+    white-space: nowrap;
+  }
+
+  /* Admin & Profile Cards Responsive Stack */
+  .profile-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  .chart-container {
+    min-height: 250px;
+  }
+
+  .header-left .search-bar {
+    display: none;
+  }
+}
+
+@media (max-width: 576px) {
+  .main-content {
+    padding: 12px;
+    padding-top: calc(var(--header-height) + 12px);
+  }
+
+  .app-header {
+    padding: 0 14px;
+  }
+
+  .user-meta {
+    display: none;
+  }
+
+  .card-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .card-header h3 {
+    font-size: 1.1rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+  }
+
+  .stat-card {
+    padding: 16px;
+  }
+
+  /* Safe Area for iOS bottom bar */
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+

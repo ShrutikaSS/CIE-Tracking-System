@@ -34,7 +34,10 @@ function calculateMarks($startTime, $endTime, $submittedTime, $maxMarks = 10.0) 
     }
 
     if ($submit > $end) {
-        return 0.0;
+        $secondsLate = $submit - $end;
+        $daysLate = ceil($secondsLate / 86400);
+        $marks = max(0.0, floatval($maxMarks) - $daysLate);
+        return round($marks, 2);
     }
 
     if ($submit < $start) {

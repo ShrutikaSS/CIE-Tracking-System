@@ -54,6 +54,17 @@ async function init() {
   if (res && res.success) {
     document.getElementById('select-student').innerHTML = '<option value="">— Choose Student —</option>' +
       res.students.map(s => `<option value="${s.id}">${s.usn} — ${s.name} (${s.dept_code})</option>`).join('');
+    
+    // Check URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const studentId = urlParams.get('student_id');
+    if (studentId) {
+      const select = document.getElementById('select-student');
+      select.value = studentId;
+      if (select.value) {
+        loadReport();
+      }
+    }
   }
 }
 
@@ -171,7 +182,7 @@ function exportPDF() {
     if (y > 260) { doc.addPage(); y = 20; }
   });
   
-  doc.save(`Student_Report_${s.usn}.pdf`);
+  doc.save(`Student_Report_${s.name.replace(/\s+/g, '_')}_${s.usn}.pdf`);
   Toast.success('PDF exported successfully.');
 }
 
@@ -194,7 +205,7 @@ function exportExcel() {
     XLSX.utils.book_append_sheet(wb, ws, sub.subject_code.substring(0, 31));
   });
   
-  XLSX.writeFile(wb, `Student_Report_${s.usn}.xlsx`);
+  XLSX.writeFile(wb, `Student_Report_${s.name.replace(/\s+/g, '_')}_${s.usn}.xlsx`);
   Toast.success('Excel exported successfully.');
 }
 

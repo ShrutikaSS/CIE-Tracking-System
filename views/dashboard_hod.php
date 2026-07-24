@@ -4,6 +4,11 @@
     <h1>Department Dashboard</h1>
     <div class="breadcrumb">Head of Department — <?= sanitize($user['name']) ?></div>
   </div>
+  <div class="actions">
+    <button onclick="openSendMessageModal()" class="btn btn-primary" style="display:inline-flex; align-items:center; gap:8px;">
+      <span>📩</span> Message Class Coordinators
+    </button>
+  </div>
 </div>
 
 <div class="stats-grid stagger">

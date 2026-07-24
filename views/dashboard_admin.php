@@ -67,14 +67,14 @@
   </div>
 </div>
 
-<!-- Activity Type Distribution -->
+<!-- Activity Type Distribution & Quick Actions -->
 <div class="grid-2">
   <div class="card">
     <div class="card-header">
       <h3>🎯 Activity Type Distribution</h3>
     </div>
     <div class="card-body">
-      <div class="chart-container">
+      <div class="chart-container" style="position:relative; min-height:260px;">
         <canvas id="chart-type-dist"></canvas>
       </div>
     </div>
@@ -84,13 +84,15 @@
       <h3>⚡ Quick Actions</h3>
     </div>
     <div class="card-body">
-      <div style="display:flex;flex-direction:column;gap:12px;">
-        <a href="/admin/departments.php" class="btn btn-secondary w-100" style="justify-content:flex-start">🏢 Manage Departments</a>
-        <a href="/admin/faculty.php" class="btn btn-secondary w-100" style="justify-content:flex-start">👨‍🏫 Manage Faculty</a>
-        <a href="/admin/students.php" class="btn btn-secondary w-100" style="justify-content:flex-start">🎓 Manage Students</a>
-        <a href="/admin/subjects.php" class="btn btn-secondary w-100" style="justify-content:flex-start">📚 Manage Subjects</a>
-        <a href="/faculty/activities.php" class="btn btn-secondary w-100" style="justify-content:flex-start">📝 View Activities</a>
-        <a href="/reports/student_report.php" class="btn btn-secondary w-100" style="justify-content:flex-start">📄 Generate Reports</a>
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:12px;">
+        <a href="<?= url('/admin/departments.php') ?>" class="btn btn-secondary w-100" style="justify-content:flex-start">🏢 Manage Departments</a>
+        <a href="<?= url('/admin/faculty.php') ?>" class="btn btn-secondary w-100" style="justify-content:flex-start">👨‍🏫 Manage Faculty</a>
+        <a href="<?= url('/admin/students.php') ?>" class="btn btn-secondary w-100" style="justify-content:flex-start">🎓 Manage Students</a>
+        <a href="<?= url('/admin/subjects.php') ?>" class="btn btn-secondary w-100" style="justify-content:flex-start">📚 Manage Subjects</a>
+        <a href="<?= url('/faculty/activities.php') ?>" class="btn btn-secondary w-100" style="justify-content:flex-start">📝 View Activities</a>
+        <a href="<?= url('/reports/student_report.php') ?>" class="btn btn-secondary w-100" style="justify-content:flex-start">📄 Generate Reports</a>
+        <a href="<?= url('/admin/profile.php') ?>" class="btn btn-primary w-100" style="justify-content:flex-start">⚙️ Admin Profile</a>
+      </div>
       </div>
     </div>
   </div>

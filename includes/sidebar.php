@@ -23,9 +23,10 @@ $icons = [
 ];
 
 function navItem($href, $icon, $label, $currentPath, $count = null) {
+    $fullUrl = url($href);
     $active = strpos($currentPath, $href) !== false ? 'active' : '';
     $badge = $count !== null ? "<span class=\"nav-count\">$count</span>" : '';
-    return "<a href=\"$href\" class=\"nav-item $active\" data-title=\"$label\">
+    return "<a href=\"$fullUrl\" class=\"nav-item $active\" data-title=\"$label\">
               <span class=\"nav-icon\">$icon</span>
               <span class=\"nav-label\">$label</span>
               $badge
@@ -85,13 +86,17 @@ function navItem($href, $icon, $label, $currentPath, $count = null) {
     <!-- HOD Menu -->
     <div class="nav-section">
       <div class="nav-section-title">Department</div>
+      <?= navItem('/hod/department_performance.php', $icons['progress'], 'Dept Performance', $currentPath) ?>
       <?= navItem('/hod/faculty_performance.php', $icons['faculty'], 'Faculty Performance', $currentPath) ?>
-      <?= navItem('/admin/students.php', $icons['students'], 'Students', $currentPath) ?>
+      <?= navItem('/hod/student_performance.php', $icons['students'], 'Student Performance', $currentPath) ?>
+      <?= navItem('/admin/students.php', $icons['students'], 'Students List', $currentPath) ?>
       <?= navItem('/admin/subjects.php', $icons['subjects'], 'Subjects', $currentPath) ?>
     </div>
     <div class="nav-section">
-      <div class="nav-section-title">Activities</div>
+      <div class="nav-section-title">Activities & Reports</div>
       <?= navItem('/faculty/activities.php', $icons['activities'], 'Activities', $currentPath) ?>
+      <?= navItem('/hod/reports.php', $icons['reports'], 'Reports Center', $currentPath) ?>
+      <?= navItem('/hod/notifications.php', $icons['notifications'], 'Notifications', $currentPath) ?>
     </div>
     
     <?php elseif ($userRole === 'faculty'): ?>

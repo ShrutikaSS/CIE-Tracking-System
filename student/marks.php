@@ -50,6 +50,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   Object.values(subjects).forEach(sub => {
     const pct = sub.max > 0 ? ((sub.total / sub.max) * 100).toFixed(1) : 0;
     const colorClass = pct >= 75 ? 'success' : pct >= 50 ? '' : pct >= 35 ? 'warning' : 'danger';
+    const cieFinal = ((sub.total * 20) / 60).toFixed(2);
     
     html += `
       <div class="card mb-3" style="box-shadow:none;border:1px solid var(--border-color)">
@@ -58,6 +59,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             <h3 style="font-size:1rem; font-family:\'Inter\', sans-serif;">${sub.code} — ${sub.name}</h3>
           </div>
           <div>
+            <span class="badge badge-info" style="font-size:0.85rem; padding:6px 12px; margin-right:8px; font-weight:700;">
+              Final CIE: ${cieFinal} / 20
+            </span>
             <span class="badge ${pct >= 75 ? 'badge-success' : pct >= 50 ? 'badge-primary' : pct >= 35 ? 'badge-warning' : 'badge-danger'}" style="font-size:0.8125rem;padding:5px 12px">
               ${pct}%
             </span>

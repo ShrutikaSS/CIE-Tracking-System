@@ -21,9 +21,9 @@ requireLogin();
           <option value="">— Choose Subject —</option>
         </select>
       </div>
-      <div class="form-group mb-0 d-flex align-center gap-1" style="align-self:flex-end">
-        <button class="btn btn-secondary" onclick="exportPDF()" id="btn-pdf" disabled>📄 Export PDF</button>
-        <button class="btn btn-secondary" onclick="exportExcel()" id="btn-excel" disabled>📊 Export Excel</button>
+      <div class="form-group mb-0 d-flex align-center gap-1 flex-wrap" style="align-self:flex-end; width:100%;">
+        <button class="btn btn-secondary" onclick="exportPDF()" id="btn-pdf" disabled style="flex:1;">📄 Export PDF</button>
+        <button class="btn btn-secondary" onclick="exportExcel()" id="btn-excel" disabled style="flex:1;">📊 Export Excel</button>
       </div>
     </div>
   </div>

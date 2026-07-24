@@ -41,8 +41,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!subjects[m.subject_code]) {
       subjects[m.subject_code] = { name: m.subject_name, code: m.subject_code, items: [], total: 0, max: 0 };
     }
+    const marksObtained = m.marks_obtained !== null && m.marks_obtained !== undefined ? parseFloat(m.marks_obtained) : 0;
     subjects[m.subject_code].items.push(m);
-    subjects[m.subject_code].total += parseFloat(m.marks_obtained);
+    subjects[m.subject_code].total += marksObtained;
     subjects[m.subject_code].max += parseFloat(m.max_marks);
   });
   
@@ -60,7 +61,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           </div>
           <div>
             <span class="badge badge-info" style="font-size:0.85rem; padding:6px 12px; margin-right:8px; font-weight:700;">
-              Final CIE: ${cieFinal} / 20
+               Final CIE: ${cieFinal} / 20
             </span>
             <span class="badge ${pct >= 75 ? 'badge-success' : pct >= 50 ? 'badge-primary' : pct >= 35 ? 'badge-warning' : 'badge-danger'}" style="font-size:0.8125rem;padding:5px 12px">
               ${pct}%
@@ -80,11 +81,13 @@ document.addEventListener('DOMContentLoaded', async () => {
               <thead><tr><th>Activity</th><th>Type</th><th>Marks Obtained</th><th>Max Marks</th><th>Percentage</th></tr></thead>
               <tbody>
                 ${sub.items.map(m => {
-                  const apct = ((parseFloat(m.marks_obtained) / parseFloat(m.max_marks)) * 100).toFixed(1);
+                  const marksObtained = m.marks_obtained !== null && m.marks_obtained !== undefined ? parseFloat(m.marks_obtained) : 0;
+                  const apct = ((marksObtained / parseFloat(m.max_marks)) * 100).toFixed(1);
+                  const displayMarks = m.marks_obtained !== null && m.marks_obtained !== undefined ? parseFloat(m.marks_obtained).toFixed(1) : 'Ab / Not Graded';
                   return `<tr>
                     <td><strong>${m.activity_name}</strong></td>
                     <td><span class="badge badge-primary">${m.activity_type}</span></td>
-                    <td><strong>${parseFloat(m.marks_obtained).toFixed(1)}</strong></td>
+                    <td><strong>${displayMarks}</strong></td>
                     <td>${parseFloat(m.max_marks).toFixed(1)}</td>
                     <td>
                       <div class="d-flex align-center gap-1">

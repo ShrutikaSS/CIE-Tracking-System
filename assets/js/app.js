@@ -3,6 +3,25 @@
  * Core JavaScript Engine
  */
 
+// ── Safe Storage Wrapper (Prevents crashes in Incognito/sandboxed mobile browsers) ──
+const SafeStorage = {
+  getItem(key) {
+    try {
+      return localStorage.getItem(key);
+    } catch (e) {
+      return null;
+    }
+  },
+  setItem(key, value) {
+    try {
+      localStorage.setItem(key, value);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+};
+
 // ── API Wrapper ──
 const API = {
   async request(url, options = {}) {

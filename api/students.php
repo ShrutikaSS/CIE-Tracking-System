@@ -6,7 +6,6 @@ require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/functions.php';
 
 requireLogin();
-requireRole(['admin', 'hod']);
 header('Content-Type: application/json');
 
 $user = currentUser();
@@ -24,6 +23,16 @@ switch ($method) {
                  JOIN departments d ON s.department_id = d.id 
                  WHERE s.id = ?", 'i', [(int)$id]
             );
+            if ($student && in_array($user['role'], ['hod', 'faculty', 'coordinator'])) {
+                if ((int)$student['department_id'] !== (int)$user['department_id']) {
+                    jsonResponse(['success' => false, 'message' => 'Access denied.'], 403);
+                }
+            }
+            if ($student && $user['role'] === 'student') {
+                if ((int)$student['user_id'] !== (int)$user['id']) {
+                    jsonResponse(['success' => false, 'message' => 'Access denied.'], 403);
+                }
+            }
             jsonResponse(['success' => true, 'student' => $student]);
         }
         
@@ -41,11 +50,16 @@ switch ($method) {
         $types = '';
         $params = [];
         
-        // HOD sees only their department
-        if ($user['role'] === 'hod') {
+        // HOD, faculty, and coordinator see only their department
+        if (in_array($user['role'], ['hod', 'faculty', 'coordinator'])) {
             $sql .= " AND s.department_id = ?";
             $types .= 'i';
             $params[] = $user['department_id'];
+        }
+        if ($user['role'] === 'student') {
+            $sql .= " AND s.user_id = ?";
+            $types .= 'i';
+            $params[] = $user['id'];
         }
         
         if ($dept) {
@@ -78,6 +92,7 @@ switch ($method) {
         break;
 
     case 'POST':
+        requireRole(['admin', 'hod']);
         $data = getJsonBody();
         $name   = trim($data['name'] ?? '');
         $email  = trim($data['email'] ?? '');
@@ -128,6 +143,7 @@ switch ($method) {
         break;
 
     case 'PUT':
+        requireRole(['admin', 'hod']);
         $data = getJsonBody();
         $id     = (int)($data['id'] ?? 0);
         $name   = trim($data['name'] ?? '');
@@ -176,6 +192,7 @@ switch ($method) {
         break;
 
     case 'DELETE':
+        requireRole(['admin', 'hod']);
         $data = getJsonBody();
         $id = (int)($data['id'] ?? 0);
         if (!$id) jsonResponse(['success' => false, 'message' => 'Invalid ID.'], 400);

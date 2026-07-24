@@ -19,13 +19,35 @@ $icons = [
     'progress'    => '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>',
     'profile'     => '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>',
     'attendance'  => '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>',
-    'notifications'=> '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>'
+    'notifications'=> '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>',
+    'messages'     => '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>'
 ];
 
+$unreadHODMsgCount = null;
+$hodSubCount = null;
+if ($userRole === 'coordinator') {
+    $userId = $_SESSION['user_id'] ?? 0;
+    $deptId = $_SESSION['department_id'] ?? 0;
+    $row = dbFetchOne(
+        "SELECT COUNT(*) as cnt FROM hod_messages WHERE department_id = ? AND (recipient_id = ? OR recipient_id IS NULL) AND is_read = 0",
+        'ii', [$deptId, $userId]
+    );
+    if ($row && $row['cnt'] > 0) {
+        $unreadHODMsgCount = (int)$row['cnt'];
+    }
+} elseif ($userRole === 'hod') {
+    $deptId = $_SESSION['department_id'] ?? 0;
+    $row = dbFetchOne("SELECT COUNT(*) as cnt FROM coordinator_submissions WHERE department_id = ?", 'i', [$deptId]);
+    if ($row && $row['cnt'] > 0) {
+        $hodSubCount = (int)$row['cnt'];
+    }
+}
+
 function navItem($href, $icon, $label, $currentPath, $count = null) {
+    $fullUrl = url($href);
     $active = strpos($currentPath, $href) !== false ? 'active' : '';
     $badge = $count !== null ? "<span class=\"nav-count\">$count</span>" : '';
-    return "<a href=\"$href\" class=\"nav-item $active\" data-title=\"$label\">
+    return "<a href=\"$fullUrl\" class=\"nav-item $active\" data-title=\"$label\">
               <span class=\"nav-icon\">$icon</span>
               <span class=\"nav-label\">$label</span>
               $badge
@@ -36,10 +58,13 @@ function navItem($href, $icon, $label, $currentPath, $count = null) {
 <aside class="app-sidebar">
   <!-- Logo -->
   <div class="sidebar-logo">
-    <div class="logo-icon">
-      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+    <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0;">
+      <div class="logo-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+      </div>
+      <span class="logo-text">CIE Tracker</span>
     </div>
-    <span class="logo-text">CIE Tracker</span>
+    <button class="sidebar-close-btn" onclick="Sidebar.close()" title="Close Sidebar">✕</button>
   </div>
   
   <!-- Navigation -->
@@ -85,13 +110,18 @@ function navItem($href, $icon, $label, $currentPath, $count = null) {
     <!-- HOD Menu -->
     <div class="nav-section">
       <div class="nav-section-title">Department</div>
+      <?= navItem('/hod/department_performance.php', $icons['progress'], 'Dept Performance', $currentPath) ?>
       <?= navItem('/hod/faculty_performance.php', $icons['faculty'], 'Faculty Performance', $currentPath) ?>
-      <?= navItem('/admin/students.php', $icons['students'], 'Students', $currentPath) ?>
+      <?= navItem('/hod/student_performance.php', $icons['students'], 'Student Performance', $currentPath) ?>
+      <?= navItem('/admin/students.php', $icons['students'], 'Students List', $currentPath) ?>
       <?= navItem('/admin/subjects.php', $icons['subjects'], 'Subjects', $currentPath) ?>
+      <?= navItem('/hod/submissions.php', $icons['messages'], 'Coordinators Submissions', $currentPath, $hodSubCount) ?>
     </div>
     <div class="nav-section">
-      <div class="nav-section-title">Activities</div>
+      <div class="nav-section-title">Activities & Reports</div>
       <?= navItem('/faculty/activities.php', $icons['activities'], 'Activities', $currentPath) ?>
+      <?= navItem('/hod/reports.php', $icons['reports'], 'Reports Center', $currentPath) ?>
+      <?= navItem('/hod/notifications.php', $icons['notifications'], 'Notifications', $currentPath) ?>
     </div>
     
     <?php elseif ($userRole === 'faculty'): ?>
@@ -111,12 +141,13 @@ function navItem($href, $icon, $label, $currentPath, $count = null) {
     <!-- Class Coordinator Menu -->
     <div class="nav-section">
       <div class="nav-section-title">Class Coordinator</div>
-      <?= navItem('/dashboard.php', $icons['dashboard'], 'Dashboard', $currentPath) ?>
       <?= navItem('/coordinator/class_performance.php', $icons['progress'], 'Class Performance', $currentPath) ?>
       <?= navItem('/coordinator/student_progress.php', $icons['students'], 'Student Progress', $currentPath) ?>
       <?= navItem('/coordinator/reports.php', $icons['reports'], 'Reports', $currentPath) ?>
+      <?= navItem('/coordinator/messages.php', $icons['messages'], 'HOD Messages', $currentPath, $unreadHODMsgCount) ?>
     </div>
     <?php endif; ?>
     <?php endif; ?>
   </nav>
 </aside>
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="Sidebar.close()"></div>

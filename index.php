@@ -215,8 +215,9 @@ if (isLoggedIn()) {
     .dept-card::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 5px; background: var(--zeal-blue); transform: scaleX(0); transition: transform 0.4s ease; transform-origin: left; }
     .dept-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.08); border-color: transparent; }
     .dept-card:hover::after { transform: scaleX(1); }
-    .dept-icon { font-size: 3.8rem; margin-bottom: 20px; transition: transform 0.4s; line-height: 1; }
-    .dept-card:hover .dept-icon { transform: scale(1.1); }
+    .dept-icon { margin-bottom: 20px; display: inline-block; }
+    .dept-icon img { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; transition: transform 0.4s, box-shadow 0.4s; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+    .dept-card:hover .dept-icon img { transform: scale(1.1); box-shadow: 0 12px 25px rgba(0,0,0,0.15); }
     .dept-card h3 { font-size: 1.35rem; margin-bottom: 15px; font-weight: 700; color: var(--zeal-black); }
     .dept-card p { color: var(--zeal-gray); font-size: 0.98rem; line-height: 1.6; margin: 0; }
  
@@ -236,9 +237,10 @@ if (isLoggedIn()) {
     /* Guidelines Section */
     .guidelines-section { padding: 120px 0; background: var(--zeal-black); color: var(--white); }
     .guidelines-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 40px; margin-top: 50px; }
-    .guideline-card { background: #222; padding: 40px; border-radius: 12px; border-top: 5px solid var(--zeal-blue); transition: transform 0.3s, box-shadow 0.3s; }
+    .guideline-card { background: #222; padding: 40px; border-radius: 12px; border-top: 5px solid var(--zeal-blue); transition: transform 0.3s, box-shadow 0.3s; text-align: center; }
     .guideline-card:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(0,0,0,0.3); }
-    .guideline-card .icon { font-size: 3.5rem; margin-bottom: 20px; }
+    .guideline-card .icon { margin-bottom: 20px; font-size: 4rem; }
+    .guideline-card .icon img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; transition: transform 0.3s; border: 3px solid var(--zeal-blue); }
     .guideline-card h3 { font-size: 1.6rem; margin-bottom: 15px; color: var(--white); }
     .guideline-card p { color: #cccccc; }
     
@@ -521,51 +523,51 @@ if (isLoggedIn()) {
       </div>
       
       <div class="dept-grid animate-on-scroll">
-        <div class="dept-card">
-          <div class="dept-icon">💻</div>
+        <a href="dept-cse.php" class="dept-card" style="text-decoration: none; color: inherit;">
+          <div class="dept-icon"><img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Department Icon"></div>
           <h3>Computer Science Engineering</h3>
           <p>Tracking algorithms, code reviews, and theoretical exams.</p>
-        </div>
-        <div class="dept-card">
-          <div class="dept-icon">🧠</div>
+        </a>
+        <a href="dept-aiml.php" class="dept-card" style="text-decoration: none; color: inherit;">
+          <div class="dept-icon"><img src="https://images.unsplash.com/photo-1555255707-c07966088b7b?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Department Icon"></div>
           <h3>Artificial Intelligence & Machine Learning (AIML)</h3>
           <p>Training AI models, machine learning algorithms, deep learning applications, computer vision, and intelligent systems.</p>
-        </div>
-        <div class="dept-card">
-          <div class="dept-icon">📊</div>
+        </a>
+        <a href="dept-aids.php" class="dept-card" style="text-decoration: none; color: inherit;">
+          <div class="dept-icon"><img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Department Icon"></div>
           <h3>Artificial Intelligence & Data Science (AIDS)</h3>
           <p>Working with big data, data analytics, predictive modeling, data visualization, and AI-driven insights.</p>
-        </div>
-        <div class="dept-card">
-          <div class="dept-icon">🌐</div>
+        </a>
+        <a href="dept-it.php" class="dept-card" style="text-decoration: none; color: inherit;">
+          <div class="dept-icon"><img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Department Icon"></div>
           <h3>Information Technology (IT)</h3>
           <p>Managing software development, web technologies, cloud computing, networking, databases, and cybersecurity projects.</p>
-        </div>
-        <div class="dept-card">
-          <div class="dept-icon">🦾</div>
+        </a>
+        <a href="dept-robotics.php" class="dept-card" style="text-decoration: none; color: inherit;">
+          <div class="dept-icon"><img src="https://images.unsplash.com/photo-1485827404703-89b55fcc595e?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Department Icon"></div>
           <h3>Robotics & Automation</h3>
           <p>Evaluating robotics projects, automation systems, embedded controllers, industrial automation, and control engineering.</p>
-        </div>
-        <div class="dept-card">
-          <div class="dept-icon">⚙️</div>
+        </a>
+        <a href="dept-mechanical.php" class="dept-card" style="text-decoration: none; color: inherit;">
+          <div class="dept-icon"><img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Department Icon"></div>
           <h3>Mechanical Engineering</h3>
           <p>Monitoring lab reports, CAD projects, and thermodynamics vivas.</p>
-        </div>
-        <div class="dept-card">
-          <div class="dept-icon">🏗️</div>
+        </a>
+        <a href="dept-civil.php" class="dept-card" style="text-decoration: none; color: inherit;">
+          <div class="dept-icon"><img src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Civil Engineering Icon"></div>
           <h3>Civil Engineering</h3>
           <p>Evaluating structural design projects and material testing labs.</p>
-        </div>
-        <div class="dept-card">
-          <div class="dept-icon">⚡</div>
+        </a>
+        <a href="dept-electrical.php" class="dept-card" style="text-decoration: none; color: inherit;">
+          <div class="dept-icon"><img src="https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Department Icon"></div>
           <h3>Electrical Engineering</h3>
           <p>Assessing power systems, electrical machines, circuit design, renewable energy systems, and control engineering labs.</p>
-        </div>
-        <div class="dept-card">
-          <div class="dept-icon">📡</div>
+        </a>
+        <a href="dept-entc.php" class="dept-card" style="text-decoration: none; color: inherit;">
+          <div class="dept-icon"><img src="https://images.unsplash.com/photo-1518770660439-4636190af475?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" alt="Department Icon"></div>
           <h3>Electronics & Telecommunication Engineering (ENTC)</h3>
           <p>Evaluating communication systems, signal processing, VLSI design, embedded systems, and wireless networks.</p>
-        </div>
+        </a>
       </div>
     </div>
   </section>
@@ -595,21 +597,21 @@ if (isLoggedIn()) {
       </div>
       
       <div class="guidelines-grid animate-on-scroll">
-        <div class="guideline-card">
+        <a href="guide-submissions.php" class="guideline-card" style="text-decoration: none; color: inherit; display: block;">
           <div class="icon">📝</div>
           <h3>Timely Submissions</h3>
           <p>All assignments and reports must be uploaded prior to the stipulated deadlines. Late submissions require formal HOD authorization.</p>
-        </div>
-        <div class="guideline-card">
+        </a>
+        <a href="guide-weightage.php" class="guideline-card" style="text-decoration: none; color: inherit; display: block;">
           <div class="icon">⚖️</div>
           <h3>Weightage Standards</h3>
           <p>Internal marks constitute 50% of the final semester grade. Quizzes, practicals, and vivas are distributed evenly per department rubrics.</p>
-        </div>
-        <div class="guideline-card">
+        </a>
+        <a href="guide-honesty.php" class="guideline-card" style="text-decoration: none; color: inherit; display: block;">
           <div class="icon">🛡️</div>
           <h3>Academic Honesty</h3>
           <p>Strict plagiarism checks are enforced. Any violations of the academic honor code will result in immediate disciplinary action.</p>
-        </div>
+        </a>
       </div>
     </div>
   </section>
@@ -724,7 +726,7 @@ if (isLoggedIn()) {
     <div class="container animate-on-scroll">
       <h2>Need Assistance?</h2>
       <p>The College IT Help Desk is available 24/7 to assist faculty and students with portal access issues.</p>
-      <a href="mailto:support.zcoer@zealedu.in" class="btn-outline">Contact IT Support</a>
+      <a href="contact.php" class="btn-outline">Contact IT Support</a>
     </div>
   </section>
 
@@ -820,10 +822,10 @@ if (isLoggedIn()) {
           
           <div style="display: flex; flex-wrap: wrap; gap: 8px;">
             <button type="button" class="btn btn-sm btn-secondary" onclick="fillDemoTyping('admin@cie.edu', 'Admin')" style="font-size:0.75rem; padding: 6px 12px; border-radius: 4px; text-transform:none; font-weight: 500;">Admin</button>
-            <button type="button" class="btn btn-sm btn-secondary" onclick="fillDemoTyping('hod.cse@cie.edu', 'HOD')" style="font-size:0.75rem; padding: 6px 12px; border-radius: 4px; text-transform:none; font-weight: 500;">HOD (CSE)</button>
+            <button type="button" class="btn btn-sm btn-secondary" onclick="fillDemoTyping('hod.cse@cie.edu', 'HOD')" style="font-size:0.75rem; padding: 6px 12px; border-radius: 4px; text-transform:none; font-weight: 500;">HOD</button>
             <button type="button" class="btn btn-sm btn-secondary" onclick="fillDemoTyping('anil.mehta@cie.edu', 'Faculty')" style="font-size:0.75rem; padding: 6px 12px; border-radius: 4px; text-transform:none; font-weight: 500;">Faculty</button>
             <button type="button" class="btn btn-sm btn-secondary" onclick="fillDemoTyping('sneha.patil@cie.edu', 'Coordinator')" style="font-size:0.75rem; padding: 6px 12px; border-radius: 4px; text-transform:none; font-weight: 500;">Coordinator</button>
-            <button type="button" class="btn btn-sm btn-secondary" onclick="fillDemoTyping('rahul.verma@cie.edu', 'Student')" style="font-size:0.75rem; padding: 6px 12px; border-radius: 4px; text-transform:none; font-weight: 500; background: var(--primary-lighter); color: var(--primary); border-color: var(--primary-lighter);">Student</button>
+            <button type="button" class="btn btn-sm btn-secondary" onclick="fillDemoTyping('rahul.verma@cie.edu', 'Student')" style="font-size:0.75rem; padding: 6px 12px; border-radius: 4px; text-transform:none; font-weight: 500;">Student</button>
           </div>
         </div>
       </div>

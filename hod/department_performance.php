@@ -102,9 +102,26 @@ $facultySummary = dbFetchAll("
 </div>
 
 <!-- Filters -->
+<style>
+@media (max-width: 600px) {
+  .dept-filter-form {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+  .dept-filter-form .form-group {
+    min-width: 100% !important;
+    width: 100% !important;
+  }
+  .dept-filter-form .btn {
+    width: 100% !important;
+  }
+}
+</style>
 <div class="card mb-3">
   <div class="card-body">
-    <form method="GET" class="form-row align-end mb-0" style="gap:16px;">
+    <form method="GET" class="form-row align-end mb-0 dept-filter-form" style="gap:16px;">
       <div class="form-group mb-0" style="flex:1; min-width:200px;">
         <label for="filter-sem">Semester</label>
         <select class="form-control" name="semester" id="filter-sem" onchange="this.form.submit()">
@@ -136,7 +153,7 @@ $facultySummary = dbFetchAll("
       </div>
       
       <div class="form-group mb-0">
-        <a href="/hod/department_performance.php" class="btn btn-secondary">Reset</a>
+        <a href="/hod/department_performance.php" class="btn btn-secondary w-100">Reset</a>
       </div>
     </form>
   </div>

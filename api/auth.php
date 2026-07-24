@@ -50,7 +50,15 @@ switch ($action) {
         
         $hashed = password_hash($newPw, PASSWORD_DEFAULT);
         dbExecute("UPDATE users SET password = ? WHERE id = ?", 'si', [$hashed, $user['id']]);
-        createNotification($user['id'], 'Password Changed', 'Your password has been successfully updated.', 'success');
+        createNotification(
+            $user['id'],
+            'Password Changed Successfully',
+            'Your account password has been successfully updated. If you did not initiate this change, please contact support immediately.',
+            'success',
+            '/student/profile.php',
+            'password_changed',
+            'all'
+        );
         
         jsonResponse(['success' => true, 'message' => 'Password updated successfully.']);
         break;

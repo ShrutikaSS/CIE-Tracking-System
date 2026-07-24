@@ -39,6 +39,9 @@ requireRole(['admin', 'hod', 'faculty', 'coordinator']);
       <div class="text-muted" id="activity-meta"></div>
     </div>
     <div class="d-flex gap-2" style="align-items:center;">
+      <button class="btn btn-outline-primary" onclick="autoFillMarks()" style="display:inline-flex; align-items:center; gap:6px;" title="Fills marks from auto-calculated submission values">
+        ⚡ Use Default Marks
+      </button>
       <button class="btn btn-outline" onclick="saveMarks(false)" style="display:inline-flex; align-items:center; gap:6px;">
         💾 Save Draft
       </button>
@@ -77,6 +80,29 @@ requireRole(['admin', 'hod', 'faculty', 'coordinator']);
           </tr>
         </thead>
         <tbody id="marks-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- CIE Summary Card -->
+<div class="card hidden" id="cie-summary-card" style="margin-top: 24px; border-top: 4px solid var(--primary);">
+  <div class="card-header">
+    <h3>CIE Summary (Subject Level)</h3>
+  </div>
+  <div class="card-body p-0">
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:40px">#</th>
+            <th>USN</th>
+            <th>Student Name</th>
+            <th>Total Activity Marks (out of 60)</th>
+            <th>Converted Final CIE (out of 20)</th>
+          </tr>
+        </thead>
+        <tbody id="cie-summary-tbody"></tbody>
       </table>
     </div>
   </div>
@@ -172,6 +198,39 @@ async function loadMarksForm() {
   // Marks Table
   document.getElementById('marks-card').classList.remove('hidden');
   renderMarksTable();
+  
+  // Load CIE Summary for the subject
+  loadCIESummary();
+}
+
+async function loadCIESummary() {
+  const subjectId = document.getElementById('select-subject').value;
+  if (!subjectId) return;
+  
+  const res = await API.get(`/api/marks.php?action=cie_summary&subject_id=${subjectId}`);
+  if (!res || !res.success) return;
+  
+  document.getElementById('cie-summary-card').classList.remove('hidden');
+  const tbody = document.getElementById('cie-summary-tbody');
+  
+  if (res.summary.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center">No students found.</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = res.summary.map((s, i) => {
+    return `<tr>
+      <td class="text-muted">${i + 1}</td>
+      <td><span class="badge badge-info">${s.usn}</span></td>
+      <td><strong>${s.student_name}</strong></td>
+      <td><strong>${parseFloat(s.total_out_of_60).toFixed(2)}</strong></td>
+      <td>
+        <span class="badge badge-primary" style="font-size:1rem; padding: 4px 10px;">
+          ${parseFloat(s.cie_out_of_20).toFixed(2)} / 20
+        </span>
+      </td>
+    </tr>`;
+  }).join('');
 }
 
 function renderMarksTable() {
@@ -304,6 +363,28 @@ async function saveMarks(showToast = true) {
   } else {
     Toast.error(res?.message || 'Failed to save marks.');
     return false;
+  }
+}
+
+async function autoFillMarks() {
+  if (!currentActivity) { Toast.warning('Please select an activity.'); return; }
+  
+  if (!confirm('This will fill student marks with auto-calculated values based on submission time and rules. Overwrite existing marks?')) {
+    return;
+  }
+  
+  showLoading();
+  const res = await API.post('/api/marks.php?action=auto_fill', {
+    activity_id: parseInt(currentActivity.id)
+  });
+  
+  hideLoading();
+  
+  if (res && res.success) {
+    Toast.success(res.message);
+    await loadMarksForm(); // Reload form to show filled marks
+  } else {
+    Toast.error(res?.message || 'Failed to auto-fill marks.');
   }
 }
 

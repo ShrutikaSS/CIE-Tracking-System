@@ -102,16 +102,16 @@ $initials = $user ? strtoupper(substr($user['name'], 0, 1) . substr(strrchr($use
         
         <div class="header-right">
           <!-- Dark Mode Toggle -->
-          <button class="notification-bell" onclick="toggleTheme()" title="Toggle Dark Mode" style="margin-right: 5px;">
+          <button class="notification-bell" onclick="toggleTheme()" title="Toggle Dark Mode">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
           </button>
           
           <!-- Language Selection -->
-          <div class="language-select" style="margin-right: 15px; display: flex; align-items: center; gap: 8px; color: var(--text-secondary);">
+          <div class="language-select" style="display: flex; align-items: center; gap: 6px; color: var(--text-secondary);">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
-            <select class="form-control" style="padding: 4px 8px; font-size: 0.85rem; height: auto;" onchange="alert('Language changed to ' + this.value)">
+            <select class="form-control lang-select-control" style="padding: 4px 6px; font-size: 0.8rem; height: auto;" onchange="alert('Language changed to ' + this.value)">
               <option value="English">English</option>
-              <option value="Marathi">मराठी (Marathi)</option>
+              <option value="Marathi">मराठी</option>
             </select>
           </div>
 

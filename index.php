@@ -234,15 +234,15 @@ if (isLoggedIn()) {
     .gallery-item:hover::before { content: ''; position: absolute; inset: 0; background: rgba(13, 58, 113, 0.4); }
     .gallery-item-large { grid-column: span 2; grid-row: span 2; }
     
-    /* Guidelines Section */
-    .guidelines-section { padding: 120px 0; background: var(--zeal-black); color: var(--white); }
+    /* Guidelines Section (Light Mode) */
+    .guidelines-section { padding: 120px 0; background: var(--zeal-light-gray); color: var(--zeal-black); }
     .guidelines-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 40px; margin-top: 50px; }
-    .guideline-card { background: #222; padding: 40px; border-radius: 12px; border-top: 5px solid var(--zeal-blue); transition: transform 0.3s, box-shadow 0.3s; text-align: center; }
-    .guideline-card:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(0,0,0,0.3); }
+    .guideline-card { background: var(--white); padding: 40px; border-radius: 12px; border-top: 5px solid var(--zeal-blue); border: 1px solid rgba(0,0,0,0.06); box-shadow: 0 4px 20px rgba(0,0,0,0.04); transition: transform 0.3s, box-shadow 0.3s; text-align: center; }
+    .guideline-card:hover { transform: translateY(-8px); box-shadow: 0 15px 35px rgba(0,0,0,0.08); }
     .guideline-card .icon { margin-bottom: 20px; font-size: 4rem; }
     .guideline-card .icon img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; transition: transform 0.3s; border: 3px solid var(--zeal-blue); }
-    .guideline-card h3 { font-size: 1.6rem; margin-bottom: 15px; color: var(--white); }
-    .guideline-card p { color: #cccccc; }
+    .guideline-card h3 { font-size: 1.6rem; margin-bottom: 15px; color: var(--zeal-black); }
+    .guideline-card p { color: var(--zeal-gray); }
     
     /* Academic Calendar Table Section */
     .calendar-section { padding: 120px 0; background: var(--white); }
@@ -582,33 +582,39 @@ if (isLoggedIn()) {
       <div class="gallery-grid animate-on-scroll">
         <div class="gallery-item gallery-item-large" style="background-image: url('https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80');"></div>
         <div class="gallery-item" style="background-image: url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80');"></div>
-        <div class="gallery-item" style="background-image: url('https://images.unsplash.com/photo-1519452314544-fc6a992e5a7b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80');"></div>
+        <div class="gallery-item" style="background-image: url('https://images.unsplash.com/photo-1497633762265-9d179a990aa6?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80');"></div>
       </div>
     </div>
   </section>
 
-  <!-- Guidelines Section (Dark Mode) -->
+  <!-- Guidelines Section (Light Mode) -->
   <section id="guidelines" class="guidelines-section">
     <div class="container">
       <div class="text-center animate-on-scroll">
-        <hr class="colorful-hr center" style="background: var(--white);">
-        <h2 class="section-title" style="margin-bottom: 20px; color: var(--white);">Evaluation Guidelines</h2>
-        <p style="max-width: 600px; margin: 0 auto; color: #ccc; font-size: 1.1rem;">Standardized protocols ensuring fairness and clarity in all internal academic assessments.</p>
+        <hr class="colorful-hr center">
+        <h2 class="section-title" style="margin-bottom: 20px; color: var(--zeal-black);">Evaluation Guidelines</h2>
+        <p style="max-width: 600px; margin: 0 auto; color: var(--zeal-gray); font-size: 1.1rem;">Standardized protocols ensuring fairness and clarity in all internal academic assessments.</p>
       </div>
       
       <div class="guidelines-grid animate-on-scroll">
         <a href="guide-submissions.php" class="guideline-card" style="text-decoration: none; color: inherit; display: block;">
-          <div class="icon">📝</div>
+          <div class="icon" style="display:flex; justify-content:center; align-items:center; height:60px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--zeal-blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><circle cx="12" cy="14" r="4"></circle><polyline points="12 12 12 14 14 14"></polyline></svg>
+          </div>
           <h3>Timely Submissions</h3>
           <p>All assignments and reports must be uploaded prior to the stipulated deadlines. Late submissions require formal HOD authorization.</p>
         </a>
         <a href="guide-weightage.php" class="guideline-card" style="text-decoration: none; color: inherit; display: block;">
-          <div class="icon">⚖️</div>
+          <div class="icon" style="display:flex; justify-content:center; align-items:center; height:60px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--zeal-blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="3" x2="12" y2="21"></line><path d="M5 6l7-3 7 3"></path><path d="M2 13l3-7 3 7a3 3 0 0 1-6 0z"></path><path d="M16 13l3-7 3 7a3 3 0 0 1-6 0z"></path></svg>
+          </div>
           <h3>Weightage Standards</h3>
           <p>Internal marks constitute 50% of the final semester grade. Quizzes, practicals, and vivas are distributed evenly per department rubrics.</p>
         </a>
         <a href="guide-honesty.php" class="guideline-card" style="text-decoration: none; color: inherit; display: block;">
-          <div class="icon">🛡️</div>
+          <div class="icon" style="display:flex; justify-content:center; align-items:center; height:60px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--zeal-blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="M9 12l2 2 4-4"></path></svg>
+          </div>
           <h3>Academic Honesty</h3>
           <p>Strict plagiarism checks are enforced. Any violations of the academic honor code will result in immediate disciplinary action.</p>
         </a>

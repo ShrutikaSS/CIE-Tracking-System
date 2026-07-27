@@ -93,7 +93,6 @@
         <a href="<?= url('/reports/student_report.php') ?>" class="btn btn-secondary w-100" style="justify-content:flex-start">📄 Generate Reports</a>
         <a href="<?= url('/admin/profile.php') ?>" class="btn btn-primary w-100" style="justify-content:flex-start">⚙️ Admin Profile</a>
       </div>
-      </div>
     </div>
   </div>
 </div>

@@ -19,7 +19,7 @@ $initials = $user ? strtoupper(substr($user['name'], 0, 1) . substr(strrchr($use
   <title><?= isset($pageTitle) ? sanitize($pageTitle) . ' — ' : '' ?>CIE Marks Tracker</title>
   
   <!-- Favicon -->
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+  <link rel="icon" type="image/jpeg" href="<?= url('/assets/logo.jpg') ?>">
   
   <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">

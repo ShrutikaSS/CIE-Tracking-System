@@ -79,7 +79,7 @@ function dbQuery($sql, $types = '', $params = []) {
  */
 function dbFetchAll($sql, $types = '', $params = []) {
     $result = dbQuery($sql, $types, $params);
-    if ($result === false) return [];
+    if (!$result || !($result instanceof mysqli_result)) return [];
     
     $rows = [];
     while ($row = $result->fetch_assoc()) {
@@ -93,7 +93,7 @@ function dbFetchAll($sql, $types = '', $params = []) {
  */
 function dbFetchOne($sql, $types = '', $params = []) {
     $result = dbQuery($sql, $types, $params);
-    if ($result === false) return null;
+    if (!$result || !($result instanceof mysqli_result)) return null;
     return $result->fetch_assoc();
 }
 

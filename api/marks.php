@@ -49,11 +49,14 @@ switch ($method) {
             }
             
             $marks = dbFetchAll(
-                "SELECT m.*, a.name as activity_name, a.type as activity_type, a.max_marks,
+                "SELECT m.id, m.activity_id, m.student_id, m.remarks, m.is_published, m.published_at,
+                        COALESCE(m.marks_obtained, sub.marks_awarded) as marks_obtained,
+                        a.name as activity_name, a.type as activity_type, a.max_marks,
                         s.name as subject_name, s.code as subject_code
                  FROM marks m 
                  JOIN activities a ON m.activity_id = a.id 
                  JOIN subjects s ON a.subject_id = s.id 
+                 LEFT JOIN submissions sub ON sub.student_id = m.student_id AND sub.activity_id = m.activity_id
                  WHERE m.student_id = ? AND m.is_published = 1 
                  ORDER BY s.code, a.activity_date",
                 'i', [$studentId]

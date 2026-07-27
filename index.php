@@ -89,6 +89,10 @@ if (isLoggedIn()) {
       top: 0;
       z-index: 1000;
       padding: 15px 0;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .header.nav-hidden {
+      transform: translateY(-100%);
     }
     .header-inner { display: flex; justify-content: space-between; align-items: center; }
     .brand { display: flex; align-items: center; gap: 15px; }
@@ -858,6 +862,42 @@ if (isLoggedIn()) {
   </div>
 
   <script>
+    /* Navbar Auto-hide Logic (Entire Landing Page) */
+    (function() {
+      const header = document.querySelector('.header');
+      if (!header) return;
+      
+      let lastScrollY = window.scrollY;
+      let ticking = false;
+
+      function updateNavbar() {
+        const currentScrollY = window.scrollY;
+
+        if (currentScrollY <= 0) {
+          // At the very top, always show
+          header.classList.remove('nav-hidden');
+        } else {
+          if (currentScrollY > lastScrollY) {
+            // Scrolling down -> hide
+            header.classList.add('nav-hidden');
+          } else {
+            // Scrolling up -> show
+            header.classList.remove('nav-hidden');
+          }
+        }
+        
+        lastScrollY = currentScrollY;
+        ticking = false;
+      }
+
+      window.addEventListener('scroll', () => {
+        if (!ticking) {
+          window.requestAnimationFrame(updateNavbar);
+          ticking = true;
+        }
+      });
+    })();
+
     /* Scroll Animation Logic */
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
@@ -870,6 +910,64 @@ if (isLoggedIn()) {
     document.querySelectorAll('.animate-on-scroll').forEach((el) => {
       observer.observe(el);
     });
+
+    /* Vanilla CountUp Animation Logic for Stats Section */
+    const statsObserver = new IntersectionObserver((entries, obs) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const stats = entry.target.querySelectorAll('.stat-number');
+          stats.forEach(stat => {
+            if (stat.getAttribute('data-counted')) return;
+            stat.setAttribute('data-counted', 'true');
+            
+            const text = stat.textContent.trim();
+            const numMatch = text.match(/[\d,.]+/);
+            if (!numMatch) return;
+            
+            const numStr = numMatch[0];
+            const targetNum = parseFloat(numStr.replace(/,/g, ''));
+            const hasComma = numStr.includes(',');
+            
+            const prefix = text.substring(0, text.indexOf(numStr));
+            const suffix = text.substring(text.indexOf(numStr) + numStr.length);
+            
+            const duration = 2000;
+            let startTime = null;
+            
+            function easeOutQuad(t) {
+              return t * (2 - t);
+            }
+            
+            function countAnimation(currentTime) {
+              if (!startTime) startTime = currentTime;
+              const progress = Math.min((currentTime - startTime) / duration, 1);
+              const easeProgress = easeOutQuad(progress);
+              
+              const currentNum = targetNum * easeProgress;
+              
+              if (progress < 1) {
+                let displayNum = Math.floor(currentNum);
+                if (hasComma) displayNum = displayNum.toLocaleString('en-US');
+                stat.textContent = prefix + displayNum + suffix;
+                window.requestAnimationFrame(countAnimation);
+              } else {
+                let finalDisplay = targetNum;
+                if (hasComma) finalDisplay = finalDisplay.toLocaleString('en-US');
+                stat.textContent = prefix + finalDisplay + suffix;
+              }
+            }
+            
+            window.requestAnimationFrame(countAnimation);
+          });
+          obs.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.5 });
+    
+    const statsSection = document.querySelector('.stats-grid');
+    if (statsSection) {
+      statsObserver.observe(statsSection);
+    }
 
     /* Modal Logic */
     function openModal(id) {

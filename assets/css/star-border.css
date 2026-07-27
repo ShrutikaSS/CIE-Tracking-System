@@ -1,0 +1,128 @@
+/* ============================================================
+   React Bits "StarBorder" Animation (Pure CSS)
+   ============================================================ */
+
+:root {
+  /* Fallback accent color in case CSS vars aren't set on the element */
+  --sb-accent-default: #3b82f6; 
+}
+
+/* Base Class applied to all buttons via JS */
+.star-border {
+  position: relative !important;
+  border-radius: 20px !important; /* Premium rounded corners */
+  border-color: transparent !important; /* Hide native borders to make room for glowing border */
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  isolation: isolate; /* Create new stacking context */
+  /* Resolve the accent color */
+  --sb-accent: var(--primary, var(--zeal-blue, var(--sb-accent-default)));
+}
+
+/* Fix text color for outline buttons losing their native border */
+.btn-outline.star-border {
+  color: var(--sb-accent) !important;
+}
+.btn-outline.star-border:hover {
+  background: var(--sb-accent) !important;
+  color: var(--sb-text-hover, #ffffff) !important;
+}
+
+/* The Animated Glowing Border (Star Particles) */
+.star-border::before {
+  content: "";
+  position: absolute;
+  inset: -2px; /* Sticks out by 2px to act as a border */
+  border-radius: inherit;
+  padding: 2px; /* Border thickness */
+  
+  /* Two radial gradients for the stars, and one faint track color */
+  background:
+    radial-gradient(circle 40px at 50% 0%, var(--sb-accent) 0%, transparent 100%),
+    radial-gradient(circle 40px at 50% 100%, var(--sb-accent) 0%, transparent 100%),
+    rgba(128, 128, 128, 0.15); 
+    
+  background-size: 200% 100%, 200% 100%, 100% 100%;
+  background-repeat: no-repeat;
+  
+  /* Initial positions: Top starts left (100%), Bottom starts right (0%) */
+  background-position: 100% 0%, 0% 100%, 0% 0%; 
+  
+  /* Mask out the center so ONLY the 2px padding ring is drawn */
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+          
+  pointer-events: none;
+  animation: starBorderAnim 5s linear infinite alternate;
+  opacity: 0.85;
+  z-index: -1;
+  transition: opacity 0.3s ease, filter 0.3s ease;
+  will-change: background-position;
+}
+
+/* The Premium Outer Glow (Hidden by default, reveals on hover) */
+.star-border::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--sb-accent);
+  filter: blur(10px);
+  opacity: 0; 
+  z-index: -2;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+/* Movement Animation */
+@keyframes starBorderAnim {
+  100% {
+    /* Top moves to right (0%), Bottom moves to left (100%) */
+    background-position: 0% 0%, 100% 100%, 0% 0%;
+  }
+}
+
+/* ============================================================
+   Hover & Click Interactions
+   ============================================================ */
+
+.star-border:hover {
+  transform: translateY(-3px) scale(1.03) !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+  /* Overriding old z-index if any so hover pop works well */
+  z-index: 50; 
+}
+
+/* Intensify border glow on hover */
+.star-border:hover::before {
+  opacity: 1;
+  filter: drop-shadow(0 0 5px var(--sb-accent));
+}
+
+/* Reveal soft ambient glow underneath */
+.star-border:hover::after {
+  opacity: 0.25; 
+}
+
+/* Premium Click Effect */
+.star-border:active {
+  transform: scale(0.97) !important;
+  transition: transform 120ms ease !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* ============================================================
+   Accessibility: Reduced Motion
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .star-border::before {
+    animation: none !important;
+    background-position: 50% 0%, 50% 100%, 0% 0% !important;
+  }
+  .star-border:hover {
+    transform: none !important;
+  }
+  .star-border:active {
+    transform: none !important;
+  }
+}

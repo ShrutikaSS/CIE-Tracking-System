@@ -19,6 +19,8 @@ if (isLoggedIn()) {
   <title>Zeal College of Engineering & Research — CIE Marks Tracker</title>
   
   <link rel="icon" href="assets/logo.jpg">
+  <link rel="stylesheet" href="assets/css/hero-animation.css">
+  <link rel="stylesheet" href="assets/css/star-border.css">
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -108,20 +110,33 @@ if (isLoggedIn()) {
     .nav-links a {
       font-weight: 600; font-size: 0.95rem; color: var(--zeal-black);
       text-transform: uppercase; letter-spacing: 1px; text-decoration: none; position: relative;
+      transition: color 0.25s cubic-bezier(0.4,0,0.2,1), transform 0.25s cubic-bezier(0.4,0,0.2,1);
     }
-    .nav-links a:hover { color: var(--zeal-blue); }
+    .nav-links a:hover { color: var(--zeal-blue); transform: translateY(-2px); }
     .nav-links a::after {
-      content: ''; position: absolute; width: 0; height: 2px; bottom: -4px; left: 0;
-      background-color: var(--zeal-blue); transition: width 0.3s;
+      content: ''; position: absolute; width: 0; height: 2px; bottom: -4px; left: 50%;
+      background-color: var(--zeal-blue); transition: width 0.3s cubic-bezier(0.4,0,0.2,1), left 0.3s cubic-bezier(0.4,0,0.2,1);
     }
-    .nav-links a:hover::after { width: 100%; }
+    .nav-links a:hover::after { width: 100%; left: 0; }
     
     .btn-login {
       background: var(--zeal-blue); color: var(--white) !important;
       padding: 10px 24px; font-family: var(--font-sans); font-weight: 600;
-      text-transform: uppercase; letter-spacing: 1px; border: none; cursor: pointer; transition: background 0.3s;
+      text-transform: uppercase; letter-spacing: 1px; border: none; cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+      position: relative; overflow: hidden;
     }
-    .btn-login:hover { background: #092850; text-decoration: none !important; }
+    .btn-login::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(120deg, transparent 40%, rgba(255,255,255,0.2) 50%, transparent 60%);
+      transform: translateX(-100%); transition: transform 0.5s ease;
+    }
+    .btn-login:hover::after { transform: translateX(100%); }
+    .btn-login:hover {
+      background: #092850; text-decoration: none !important;
+      transform: translateY(-2px); box-shadow: 0 6px 20px rgba(13,58,113,0.4);
+    }
+    .btn-login:active { transform: translateY(0) scale(0.97); }
     
     /* Hero Banner */
     .hero {
@@ -138,16 +153,11 @@ if (isLoggedIn()) {
     }
     .hero::before {
       content: ''; position: absolute; inset: 0;
-      background: linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 100%);
+      background: linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.55) 100%);
     }
     .hero-content {
       position: relative; z-index: 10;
       max-width: 800px; color: var(--white);
-      animation: heroFadeIn 1s ease-out;
-    }
-    @keyframes heroFadeIn {
-      from { opacity: 0; transform: translateX(-50px); }
-      to { opacity: 1; transform: translateX(0); }
     }
     .hero h1 { font-size: 5rem; margin-bottom: 20px; line-height: 1.1; }
     .hero p { font-size: 1.4rem; margin-bottom: 40px; font-weight: 300; max-width: 650px; }
@@ -280,9 +290,21 @@ if (isLoggedIn()) {
     .support-banner p { font-size: 1.3rem; margin-bottom: 40px; opacity: 0.9; }
     .btn-outline {
       display: inline-block; padding: 18px 50px; border: 2px solid var(--white); color: var(--white);
-      font-weight: 700; text-transform: uppercase; letter-spacing: 1px; transition: background 0.3s, color 0.3s; font-size: 1.1rem;
+      font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+      transition: all 0.3s cubic-bezier(0.4,0,0.2,1); font-size: 1.1rem;
+      position: relative; overflow: hidden;
     }
-    .btn-outline:hover { background: var(--white); color: var(--zeal-blue); text-decoration: none; }
+    .btn-outline::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(120deg, transparent 40%, rgba(255,255,255,0.2) 50%, transparent 60%);
+      transform: translateX(-100%); transition: transform 0.5s ease;
+    }
+    .btn-outline:hover::after { transform: translateX(100%); }
+    .btn-outline:hover {
+      background: var(--white); color: var(--zeal-blue); text-decoration: none;
+      transform: translateY(-2px); box-shadow: 0 8px 25px rgba(255,255,255,0.25);
+    }
+    .btn-outline:active { transform: translateY(0) scale(0.97); }
     
     /* Footer */
     .footer { background: var(--zeal-black); color: #cccccc; padding: 100px 0 50px; font-family: var(--font-sans); }
@@ -736,7 +758,7 @@ if (isLoggedIn()) {
     <div class="container animate-on-scroll">
       <h2>Need Assistance?</h2>
       <p>The College IT Help Desk is available 24/7 to assist faculty and students with portal access issues.</p>
-      <a href="contact.php" class="btn-outline">Contact IT Support</a>
+      <a href="contact.php" class="btn-outline" style="--sb-accent: #ffffff; --sb-text-hover: var(--zeal-blue);">Contact Us</a>
     </div>
   </section>
 
@@ -1128,5 +1150,7 @@ if (isLoggedIn()) {
       }
     }, 3000);
   </script>
+  <script src="assets/js/hero-animation.js"></script>
+  <script src="assets/js/star-border.js"></script>
 </body>
 </html>

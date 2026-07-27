@@ -4,15 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Timely Submissions | Academic Guidelines | Zeal College</title>
+    <link rel="icon" type="image/jpeg" href="assets/logo.jpg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --harvard-crimson: #A51C30;
-            --harvard-dark: #1E1E1E;
-            --harvard-cream: #FAF9F6;
-            --harvard-gray: #4A4A4A;
+            --zeal-blue: #002B49;
+            --zeal-red: #D32F2F;
+            --zeal-gray: #4A5568;
+            --zeal-light: #F8FAFC;
+            --zeal-dark: #0F172A;
             --font-serif: 'Lora', Georgia, serif;
             --font-sans: 'Inter', Helvetica, Arial, sans-serif;
         }
@@ -21,146 +23,150 @@
             margin: 0;
             padding: 0;
             font-family: var(--font-sans);
-            background-color: var(--harvard-cream);
-            color: var(--harvard-dark);
+            background-color: var(--zeal-light);
+            color: var(--zeal-dark);
             line-height: 1.8;
             font-size: 1.05rem;
         }
         
         header {
-            background-color: var(--harvard-dark);
+            background-color: var(--zeal-blue);
             color: #fff;
-            padding: 20px 40px;
+            padding: 16px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 5px solid var(--harvard-crimson);
+            border-bottom: 4px solid var(--zeal-red);
             position: sticky;
             top: 0;
             z-index: 100;
         }
         
-        .header-brand {
-            font-family: var(--font-serif);
-            font-size: 1.5rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-        
-        .header-brand a {
-            color: #fff;
-            text-decoration: none;
-        }
-        
         .back-link {
             color: #fff;
             text-decoration: none;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             text-transform: uppercase;
             letter-spacing: 1px;
-            font-weight: 600;
-            transition: color 0.3s;
+            font-weight: 700;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.12);
+            border-radius: 6px;
         }
         
         .back-link:hover {
-            color: var(--harvard-crimson);
+            background: var(--zeal-red);
+            color: #fff;
         }
         
         .hero {
-            padding: 140px 40px;
+            padding: 100px 40px;
             text-align: center;
-            background: linear-gradient(rgba(30,30,30,0.85), rgba(30,30,30,0.85)), url('https://images.unsplash.com/photo-1524178232363-1fb2b075b655?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover;
+            background: linear-gradient(rgba(0, 43, 73, 0.88), rgba(0, 43, 73, 0.88)), url('https://images.unsplash.com/photo-1524178232363-1fb2b075b655?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover;
             color: #fff;
-            border-bottom: 8px solid var(--harvard-crimson);
+            border-bottom: 6px solid var(--zeal-red);
         }
         
-        .hero-icon {
-            font-size: 5rem;
-            margin-bottom: 20px;
+        .hero-icon-wrap {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px auto;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
         }
         
         .hero h1 {
             font-family: var(--font-serif);
-            font-size: 4.5rem;
-            margin: 0 0 20px 0;
+            font-size: 3.8rem;
+            margin: 0 0 16px 0;
             font-weight: 700;
-            letter-spacing: -1px;
+            letter-spacing: -0.5px;
         }
         
         .hero p {
-            font-size: 1.6rem;
+            font-size: 1.4rem;
             font-family: var(--font-serif);
             font-style: italic;
-            max-width: 900px;
+            max-width: 850px;
             margin: 0 auto;
-            color: #E0E0E0;
+            color: #E2E8F0;
         }
         
         .content-container {
             max-width: 900px;
-            margin: 80px auto;
+            margin: 60px auto;
             padding: 0 40px;
         }
         
         h2 {
             font-family: var(--font-serif);
-            font-size: 2.8rem;
-            color: var(--harvard-crimson);
-            margin-top: 80px;
-            margin-bottom: 30px;
-            border-bottom: 2px solid var(--harvard-crimson);
+            font-size: 2.4rem;
+            color: var(--zeal-blue);
+            margin-top: 60px;
+            margin-bottom: 24px;
+            border-bottom: 2px solid var(--zeal-red);
             padding-bottom: 10px;
         }
         
         h3 {
             font-family: var(--font-serif);
-            font-size: 2rem;
-            color: var(--harvard-dark);
-            margin-top: 50px;
-            margin-bottom: 20px;
+            font-size: 1.8rem;
+            color: var(--zeal-blue);
+            margin-top: 40px;
+            margin-bottom: 18px;
         }
         
         p {
-            margin-bottom: 25px;
-            color: var(--harvard-gray);
+            margin-bottom: 24px;
+            color: var(--zeal-gray);
         }
         
         .stats-grid {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
-            gap: 30px;
-            margin: 80px 0;
+            gap: 24px;
+            margin: 60px 0;
         }
         
         .stat-card {
             background: #fff;
-            padding: 40px 30px;
+            padding: 35px 25px;
             text-align: center;
-            border-top: 5px solid var(--harvard-dark);
-            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
-            transition: transform 0.3s;
+            border-top: 4px solid var(--zeal-blue);
+            border-radius: 8px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+            transition: transform 0.3s, box-shadow 0.3s;
         }
         
         .stat-card:hover {
-            transform: translateY(-10px);
+            transform: translateY(-6px);
+            box-shadow: 0 12px 36px rgba(0,0,0,0.1);
         }
         
         .stat-card h3 {
-            font-size: 3.5rem;
-            color: var(--harvard-crimson);
-            margin: 0 0 15px 0;
+            font-size: 3.2rem;
+            color: var(--zeal-red);
+            margin: 0 0 10px 0;
             border: none;
             padding: 0;
         }
         
         .stat-card p {
-            font-size: 1rem;
+            font-size: 0.92rem;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
+            letter-spacing: 1.2px;
             margin: 0;
             font-weight: 700;
-            color: var(--harvard-dark);
+            color: var(--zeal-blue);
         }
         
         ul {
@@ -169,8 +175,8 @@
         }
         
         li {
-            margin-bottom: 15px;
-            color: var(--harvard-gray);
+            margin-bottom: 14px;
+            color: var(--zeal-gray);
         }
         
         .course-table {
@@ -178,69 +184,84 @@
             border-collapse: collapse;
             margin: 40px 0;
             background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
             box-shadow: 0 5px 20px rgba(0,0,0,0.05);
         }
         
         .course-table th, .course-table td {
-            padding: 20px;
+            padding: 18px 20px;
             text-align: left;
-            border-bottom: 1px solid #E0E0E0;
+            border-bottom: 1px solid #E2E8F0;
         }
         
         .course-table th {
-            background-color: var(--harvard-dark);
+            background-color: var(--zeal-blue);
             color: #fff;
             font-family: var(--font-serif);
-            font-size: 1.2rem;
+            font-size: 1.1rem;
         }
         
         .course-table tr:hover {
-            background-color: #F5F5F5;
+            background-color: #F8FAFC;
         }
         
         .quote-block {
-            margin: 80px 0;
-            padding: 50px;
-            background: var(--harvard-dark);
+            margin: 60px 0;
+            padding: 40px 50px;
+            background: var(--zeal-blue);
             color: #fff;
             text-align: center;
-            border-left: 10px solid var(--harvard-crimson);
+            border-left: 8px solid var(--zeal-red);
+            border-radius: 0 8px 8px 0;
         }
         
         .quote-block h4 {
             font-family: var(--font-serif);
-            font-size: 2.2rem;
+            font-size: 2rem;
             font-style: italic;
-            margin: 0 0 20px 0;
+            margin: 0 0 16px 0;
             font-weight: 400;
         }
         
         .quote-block p {
-            color: #ccc;
+            color: #CBD5E1;
             text-transform: uppercase;
             letter-spacing: 2px;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             margin: 0;
         }
         
         footer {
-            background: var(--harvard-dark);
+            background: var(--zeal-blue);
             color: #fff;
             text-align: center;
-            padding: 60px 40px;
-            font-family: var(--font-serif);
-            border-top: 5px solid var(--harvard-crimson);
+            padding: 45px 40px;
+            font-family: var(--font-sans);
+            border-top: 4px solid var(--zeal-red);
         }
     </style>
 </head>
 <body>
     <header>
-        <div class="header-brand"><a href="index.php">Zeal College</a></div>
-        <a href="index.php#guidelines" class="back-link">← Return to Guidelines</a>
+        <div style="display: flex; align-items: center; gap: 14px;">
+            <img src="assets/logo.jpg" alt="ZCOER Logo" style="height: 50px; width: auto; background: white; padding: 3px; border-radius: 6px;">
+            <div style="line-height: 1.15; display: flex; flex-direction: column;">
+                <span style="font-family: var(--font-serif); font-size: 1.1rem; font-weight: 800; color: #FFFFFF; letter-spacing: 0.5px; text-transform: uppercase;">ZEAL COLLEGE OF</span>
+                <span style="font-family: var(--font-serif); font-size: 1.1rem; font-weight: 800; color: #FFFFFF; letter-spacing: 0.5px; text-transform: uppercase;">ENGINEERING & RESEARCH</span>
+                <span style="font-size: 0.68rem; color: #CBD5E1; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">ACADEMIC EVALUATION GUIDELINES</span>
+            </div>
+        </div>
+        <a href="index.php#guidelines" class="back-link">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            Return to Guidelines
+        </a>
     </header>
     
     <section class="hero">
-        <div class="hero-icon">📝</div>
+        <div class="hero-icon-wrap">
+            <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><circle cx="12" cy="14" r="4"></circle><polyline points="12 12 12 14 14 14"></polyline></svg>
+        </div>
         <h1>Timely Submissions</h1>
         <p>"Ensuring punctuality and professional responsibility in academic deliverables."</p>
     </section>
@@ -262,7 +283,7 @@
             </div>
             <div class="stat-card">
                 <h3>24/7</h3>
-                <p>Monitoring</p>
+                <p>System Monitoring</p>
             </div>
         </div>
 

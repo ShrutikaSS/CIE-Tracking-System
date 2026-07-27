@@ -4,6 +4,11 @@
  * CIE Activity Marks Tracking System
  */
 
+// Ensure output buffering is active to prevent stray PHP notices/warnings in API responses
+if (ob_get_level() === 0) {
+    ob_start();
+}
+
 // Start session with secure settings
 if (session_status() === PHP_SESSION_NONE) {
     session_set_cookie_params([
@@ -108,11 +113,14 @@ function currentUser() {
  */
 function requireLogin() {
     if (!isLoggedIn()) {
-        // Check if AJAX request
-        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
-            strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+        $uri = $_SERVER['REQUEST_URI'] ?? '';
+        $isApi = (strpos($uri, '/api/') !== false) || 
+                 (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest');
+        
+        if ($isApi) {
             http_response_code(401);
-            echo json_encode(['success' => false, 'message' => 'Please login to continue.']);
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Session expired. Please login again.']);
             exit;
         }
         header('Location: /index.php');
@@ -132,9 +140,13 @@ function requireRole($roles) {
     }
     
     if (!in_array($_SESSION['user_role'], $roles)) {
-        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
-            strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+        $uri = $_SERVER['REQUEST_URI'] ?? '';
+        $isApi = (strpos($uri, '/api/') !== false) || 
+                 (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest');
+        
+        if ($isApi) {
             http_response_code(403);
+            header('Content-Type: application/json');
             echo json_encode(['success' => false, 'message' => 'Access denied.']);
             exit;
         }

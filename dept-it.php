@@ -9,10 +9,11 @@
     <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --harvard-crimson: #A51C30;
-            --harvard-dark: #1E1E1E;
-            --harvard-cream: #FAF9F6;
-            --harvard-gray: #4A4A4A;
+            --zeal-blue: #002B49;
+            --zeal-red: #D32F2F;
+            --zeal-gray: #4A5568;
+            --zeal-light: #F8FAFC;
+            --zeal-dark: #0F172A;
             --font-serif: 'Lora', Georgia, serif;
             --font-sans: 'Inter', Helvetica, Arial, sans-serif;
         }
@@ -21,64 +22,245 @@
             margin: 0;
             padding: 0;
             font-family: var(--font-sans);
-            background-color: var(--harvard-cream);
-            color: var(--harvard-dark);
+            background-color: var(--zeal-light);
+            color: var(--zeal-dark);
             line-height: 1.8;
             font-size: 1.05rem;
         }
         
         header {
-            background-color: var(--harvard-dark);
+            background-color: var(--zeal-blue);
             color: #fff;
-            padding: 20px 40px;
+            padding: 16px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 5px solid var(--harvard-crimson);
+            border-bottom: 4px solid var(--zeal-red);
             position: sticky;
             top: 0;
             z-index: 100;
         }
         
-        .header-brand {
-            font-family: var(--font-serif);
-            font-size: 1.5rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-        
-        .header-brand a {
-            color: #fff;
-            text-decoration: none;
-        }
-        
         .back-link {
             color: #fff;
             text-decoration: none;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             text-transform: uppercase;
             letter-spacing: 1px;
-            font-weight: 600;
-            transition: color 0.3s;
+            font-weight: 700;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.12);
+            border-radius: 6px;
         }
         
         .back-link:hover {
-            color: var(--harvard-crimson);
+            background: var(--zeal-red);
+            color: #fff;
         }
         
         .hero {
-            padding: 140px 40px;
+            padding: 100px 40px;
             text-align: center;
-            background: linear-gradient(rgba(30,30,30,0.85), rgba(30,30,30,0.85)), url('https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover;
+            background: linear-gradient(rgba(0, 43, 73, 0.88), rgba(0, 43, 73, 0.88)), url('https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') center/cover;
             color: #fff;
-            border-bottom: 8px solid var(--harvard-crimson);
+            border-bottom: 6px solid var(--zeal-red);
         }
         
-        .hero-icon {
-            font-size: 5rem;
-            margin-bottom: 20px;
+        .hero-icon-wrap {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px auto;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
         }
+        
+        .hero h1 {
+            font-family: var(--font-serif);
+            font-size: 3.8rem;
+            margin: 0 0 16px 0;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        
+        .hero p {
+            font-size: 1.4rem;
+            font-family: var(--font-serif);
+            font-style: italic;
+            max-width: 850px;
+            margin: 0 auto;
+            color: #E2E8F0;
+        }
+        
+        .content-container {
+            max-width: 900px;
+            margin: 60px auto;
+            padding: 0 40px;
+        }
+        
+        h2 {
+            font-family: var(--font-serif);
+            font-size: 2.4rem;
+            color: var(--zeal-blue);
+            margin-top: 60px;
+            margin-bottom: 24px;
+            border-bottom: 2px solid var(--zeal-red);
+            padding-bottom: 10px;
+        }
+        
+        h3 {
+            font-family: var(--font-serif);
+            font-size: 1.8rem;
+            color: var(--zeal-blue);
+            margin-top: 40px;
+            margin-bottom: 18px;
+        }
+        
+        p {
+            margin-bottom: 24px;
+            color: var(--zeal-gray);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 24px;
+            margin: 60px 0;
+        }
+        
+        .stat-card {
+            background: #fff;
+            padding: 35px 25px;
+            text-align: center;
+            border-top: 4px solid var(--zeal-blue);
+            border-radius: 8px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 36px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card h3 {
+            font-size: 3.2rem;
+            color: var(--zeal-red);
+            margin: 0 0 10px 0;
+            border: none;
+            padding: 0;
+        }
+        
+        .stat-card p {
+            font-size: 0.92rem;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            margin: 0;
+            font-weight: 700;
+            color: var(--zeal-blue);
+        }
+        
+        ul {
+            margin-bottom: 30px;
+            padding-left: 20px;
+        }
+        
+        li {
+            margin-bottom: 14px;
+            color: var(--zeal-gray);
+        }
+        
+        .course-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 40px 0;
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        }
+        
+        .course-table th, .course-table td {
+            padding: 18px 20px;
+            text-align: left;
+            border-bottom: 1px solid #E2E8F0;
+        }
+        
+        .course-table th {
+            background-color: var(--zeal-blue);
+            color: #fff;
+            font-family: var(--font-serif);
+            font-size: 1.1rem;
+        }
+        
+        .course-table tr:hover {
+            background-color: #F8FAFC;
+        }
+        
+        .quote-block {
+            margin: 60px 0;
+            padding: 40px 50px;
+            background: var(--zeal-blue);
+            color: #fff;
+            text-align: center;
+            border-left: 8px solid var(--zeal-red);
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .quote-block h4 {
+            font-family: var(--font-serif);
+            font-size: 2rem;
+            font-style: italic;
+            margin: 0 0 16px 0;
+            font-weight: 400;
+        }
+        
+        .quote-block p {
+            color: #CBD5E1;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 0.85rem;
+            margin: 0;
+        }
+        
+        footer {
+            background: var(--zeal-blue);
+            color: #fff;
+            text-align: center;
+            padding: 45px 40px;
+            font-family: var(--font-sans);
+            border-top: 4px solid var(--zeal-red);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div style="display: flex; align-items: center; gap: 14px;">
+            <img src="assets/logo.jpg" alt="ZCOER Logo" style="height: 50px; width: auto; background: white; padding: 3px; border-radius: 6px;">
+            <div style="line-height: 1.15; display: flex; flex-direction: column;">
+                <span style="font-family: var(--font-serif); font-size: 1.1rem; font-weight: 800; color: #FFFFFF; letter-spacing: 0.5px; text-transform: uppercase;">ZEAL COLLEGE OF</span>
+                <span style="font-family: var(--font-serif); font-size: 1.1rem; font-weight: 800; color: #FFFFFF; letter-spacing: 0.5px; text-transform: uppercase;">ENGINEERING & RESEARCH</span>
+                <span style="font-size: 0.68rem; color: #CBD5E1; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">ACADEMIC DEPARTMENTS</span>
+            </div>
+        </div>
+        <a href="index.php#departments" class="back-link">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            Return to Departments
+        </a>
+    </header>
+    
+    <section class="hero">
+        <div class="hero-icon-wrap">
+            <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+        </div>
         
         .hero h1 {
             font-family: var(--font-serif);

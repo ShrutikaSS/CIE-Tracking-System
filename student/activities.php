@@ -11,22 +11,60 @@ requireRole(['student']);
   </div>
 </div>
 
-<div class="card mb-3">
-  <div class="card-body">
-    <div class="form-row" style="grid-template-columns: 2fr 1fr 1fr 1fr; gap: 12px; align-items: end;">
-      <div class="form-group mb-0">
-        <label>Search Activities</label>
-        <input type="text" class="form-control" id="search-input" placeholder="Search by activity name...">
+<!-- Quick Overview Stats -->
+<div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 20px;">
+  <div class="stat-card" style="padding: 16px 20px; border-radius: 10px;">
+    <div class="stat-info">
+      <h4>Total Activities</h4>
+      <div class="stat-value" id="stat-total">—</div>
+    </div>
+    <div class="stat-icon blue" style="width:40px; height:40px; font-size:18px;">📝</div>
+  </div>
+  <div class="stat-card" style="padding: 16px 20px; border-radius: 10px;">
+    <div class="stat-info">
+      <h4>Active Now</h4>
+      <div class="stat-value" id="stat-active" style="color:var(--success);">—</div>
+    </div>
+    <div class="stat-icon green" style="width:40px; height:40px; font-size:18px;">🟢</div>
+  </div>
+  <div class="stat-card" style="padding: 16px 20px; border-radius: 10px;">
+    <div class="stat-info">
+      <h4>Submitted</h4>
+      <div class="stat-value" id="stat-submitted" style="color:var(--info);">—</div>
+    </div>
+    <div class="stat-icon indigo" style="width:40px; height:40px; font-size:18px;">📤</div>
+  </div>
+  <div class="stat-card" style="padding: 16px 20px; border-radius: 10px;">
+    <div class="stat-info">
+      <h4>Graded</h4>
+      <div class="stat-value" id="stat-graded" style="color:var(--purple);">—</div>
+    </div>
+    <div class="stat-icon purple" style="width:40px; height:40px; font-size:18px;">📊</div>
+  </div>
+</div>
+
+<!-- Filters Card -->
+<div class="card mb-4" style="border-radius: 12px; box-shadow: var(--shadow-sm);">
+  <div class="card-body" style="padding: 16px 20px;">
+    <div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end;">
+      <div style="flex: 2 1 240px; min-width: 200px;">
+        <label style="font-weight: 600; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 6px; display: block;">Search Activities</label>
+        <div style="position: relative;">
+          <input type="text" class="form-control" id="search-input" placeholder="Search by activity name..." style="padding-left: 36px; height: 38px; border-radius: 8px;">
+          <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; display: flex; align-items: center;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </span>
+        </div>
       </div>
-      <div class="form-group mb-0">
-        <label>Subject</label>
-        <select class="form-control" id="subject-filter">
+      <div style="flex: 1 1 160px; min-width: 140px;">
+        <label style="font-weight: 600; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 6px; display: block;">Subject</label>
+        <select class="form-control" id="subject-filter" style="height: 38px; border-radius: 8px;">
           <option value="">All Subjects</option>
         </select>
       </div>
-      <div class="form-group mb-0">
-        <label>Activity Type</label>
-        <select class="form-control" id="type-filter">
+      <div style="flex: 1 1 160px; min-width: 140px;">
+        <label style="font-weight: 600; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 6px; display: block;">Activity Type</label>
+        <select class="form-control" id="type-filter" style="height: 38px; border-radius: 8px;">
           <option value="">All Types</option>
           <option value="assignment">Assignment</option>
           <option value="quiz">Quiz</option>
@@ -38,9 +76,9 @@ requireRole(['student']);
           <option value="presentation">Presentation</option>
         </select>
       </div>
-      <div class="form-group mb-0">
-        <label>Status</label>
-        <select class="form-control" id="status-filter">
+      <div style="flex: 1 1 140px; min-width: 130px;">
+        <label style="font-weight: 600; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 6px; display: block;">Status</label>
+        <select class="form-control" id="status-filter" style="height: 38px; border-radius: 8px;">
           <option value="">All Statuses</option>
           <option value="active">Active</option>
           <option value="completed">Completed</option>
@@ -50,26 +88,23 @@ requireRole(['student']);
   </div>
 </div>
 
-<div class="card">
+<!-- Table Card -->
+<div class="card" style="border-radius: 12px; overflow: hidden; box-shadow: var(--shadow-sm);">
   <div class="card-body p-0">
     <div class="table-container">
-      <table id="activities-table">
+      <table id="activities-table" style="width: 100%; border-collapse: collapse;">
         <thead>
-            <th data-sortable="true">Unit</th>
-            <th data-sortable="true">Activity Name</th>
-            <th data-sortable="true">Subject</th>
-            <th data-sortable="true">Type</th>
-            <th data-sortable="true">Max Marks</th>
-            <th data-sortable="true">Window</th>
-            <th data-sortable="true">Auto Status</th>
-            <th data-sortable="true">Status</th>
-            <th data-sortable="true">Submission</th>
-            <th data-sortable="true">Marks Obtained</th>
-            <th data-sortable="false">Actions</th>
+          <tr>
+            <th data-sortable="true" style="min-width: 220px; padding: 14px 18px;">Activity & Subject</th>
+            <th data-sortable="true" style="width: 110px; padding: 14px 14px;">Type</th>
+            <th data-sortable="true" style="min-width: 170px; padding: 14px 14px;">Timeline</th>
+            <th data-sortable="true" style="width: 150px; padding: 14px 14px;">Status & Submission</th>
+            <th data-sortable="true" style="width: 130px; padding: 14px 14px;">Marks</th>
+            <th data-sortable="false" style="width: 180px; text-align: right; padding: 14px 18px;">Actions</th>
           </tr>
         </thead>
         <tbody id="activities-tbody">
-          <tr><td colspan="10" class="text-center"><div class="spinner spinner-sm" style="margin:20px auto;"></div></td></tr>
+          <tr><td colspan="6" class="text-center" style="padding: 40px 0;"><div class="spinner spinner-sm" style="margin:20px auto;"></div></td></tr>
         </tbody>
       </table>
     </div>
@@ -315,63 +350,92 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     if (res && res.success) {
       allActivities = res.activities;
+
+      // Update stat card counters
+      document.getElementById('stat-total').textContent = allActivities.length;
+      document.getElementById('stat-active').textContent = allActivities.filter(a => a.auto_status === 'ACTIVE').length;
+      document.getElementById('stat-submitted').textContent = allActivities.filter(a => a.submission_id).length;
+      document.getElementById('stat-graded').textContent = allActivities.filter(a => a.is_marks_published == 1 && a.marks_obtained !== null).length;
+
       if (allActivities.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" class="text-center" style="padding:40px 0;"><div class="icon" style="margin-bottom:8px; display:flex; justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-muted);"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg></div><h3>No activities found</h3><p>No activities match your filters.</p></td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding:40px 0;"><div class="icon" style="margin-bottom:8px; display:flex; justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-muted);"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg></div><h3>No activities found</h3><p>No activities match your filters.</p></td></tr>';
         return;
       }
 
       tbody.innerHTML = allActivities.map(a => {
-        let marksDisplay = '<span class="text-muted" style="font-size:0.85rem;">—</span>';
+        let marksDisplay = '<span class="text-muted" style="font-size:0.82rem;">—</span>';
         if (a.is_marks_published == 1 && a.marks_obtained !== null) {
           const score = parseFloat(a.marks_obtained).toFixed(1);
           const max = parseFloat(a.max_marks).toFixed(1);
           const pct = max > 0 ? ((score / max) * 100).toFixed(1) : 0;
           const badgeClass = pct >= 75 ? 'badge-success' : pct >= 40 ? 'badge-primary' : 'badge-danger';
           marksDisplay = `<div style="display:flex; flex-direction:column; gap:2px;">
-            <span class="badge ${badgeClass}" style="font-size:0.85rem; font-weight:700;">${score} / ${max}</span>
-            <small style="font-size:0.75rem; color:var(--text-muted); font-weight:600;">${pct}%</small>
+            <span class="badge ${badgeClass}" style="font-size:0.82rem; font-weight:700;">${score} / ${max}</span>
+            <small style="font-size:0.72rem; color:var(--text-muted); font-weight:600;">${pct}%</small>
           </div>`;
         } else if (a.submission_id) {
-          marksDisplay = `<span class="badge badge-warning" style="font-size:0.75rem; padding:4px 8px;">⏳ Under Review</span>`;
+          marksDisplay = `<span class="badge badge-warning" style="font-size:0.75rem; padding:3px 8px;">⏳ Under Review</span>`;
+        } else {
+          marksDisplay = `<span style="font-size:0.82rem; font-weight:600; color:var(--text-secondary);">Max: ${parseFloat(a.max_marks).toFixed(1)}</span>`;
         }
 
-        const autoStatusClass = { NOT_STARTED: 'badge-secondary', ACTIVE: 'badge-success', CLOSED: 'badge-danger' };
+        // Consolidated status badge
+        let submissionBadge = a.submission_id 
+          ? `<span class="badge badge-success" style="display:inline-flex; align-items:center; gap:4px; font-size:0.7rem;">
+               <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+               Submitted
+             </span>` 
+          : `<span class="badge badge-secondary" style="font-size:0.7rem;">Not Submitted</span>`;
+
+        let autoStatusBadge = a.auto_status === 'ACTIVE' 
+          ? '<span class="badge badge-success" style="font-size:0.68rem;">ACTIVE</span>' 
+          : a.auto_status === 'CLOSED'
+          ? '<span class="badge badge-danger" style="font-size:0.68rem;">CLOSED</span>'
+          : `<span class="badge badge-secondary" style="font-size:0.68rem;">${a.auto_status}</span>`;
+
         return `
         <tr>
-          <td><span class="badge badge-secondary">Unit ${a.unit_no}</span></td>
-          <td><strong>${a.name}</strong></td>
-          <td>${a.subject_code} - ${a.subject_name}</td>
-          <td><span class="badge badge-primary">${a.type}</span></td>
-          <td><strong>${parseFloat(a.max_marks).toFixed(1)}</strong></td>
-          <td style="font-size:0.8rem">
-            <div><span style="color:var(--success)">▶</span> ${formatDateTime(a.start_time)}</div>
-            <div><span style="color:var(--danger)">⏹</span> ${formatDateTime(a.end_time)}</div>
-            ${a.auto_status === 'ACTIVE' ? getCountdown(a.end_time) : ''}
+          <td style="padding: 12px 18px;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px; flex-wrap:wrap;">
+              <span class="badge badge-secondary" style="font-size:0.68rem; font-weight:700; padding:2px 6px;">Unit ${a.unit_no}</span>
+              <strong style="font-size:0.92rem; color:var(--text-primary);">${a.name}</strong>
+            </div>
+            <div style="font-size:0.78rem; color:var(--text-muted); font-weight:500;">
+              ${a.subject_code} &bull; ${a.subject_name}
+            </div>
           </td>
-          <td><span class="badge ${autoStatusClass[a.auto_status] || 'badge-secondary'}">${a.auto_status}</span></td>
-          <td><span class="badge ${a.status === 'completed' ? 'badge-success' : 'badge-primary'}">${a.status}</span></td>
-          <td>
-            ${a.submission_id 
-              ? `<span class="badge badge-success" style="display:inline-flex; align-items:center; gap:4px;">
-                   <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                   Submitted
-                 </span>` 
-              : `<span class="badge badge-secondary">Not Submitted</span>`}
+          <td style="padding: 12px 14px;">
+            <span class="badge badge-primary" style="font-size:0.7rem; text-transform:uppercase;">${a.type}</span>
           </td>
-          <td>${marksDisplay}</td>
-          <td>
-            <div style="display:flex; gap:6px; flex-wrap:wrap;">
-              <button class="btn btn-sm btn-secondary" style="display:inline-flex; align-items:center; gap:6px;" onclick="viewDetails(${a.id})">
+          <td style="font-size:0.78rem; padding: 12px 14px;">
+            <div style="display:flex; align-items:center; gap:4px; color:var(--text-secondary); margin-bottom:2px;">
+              <span style="color:var(--success); font-size:9px;">▶</span> ${formatDateTime(a.start_time)}
+            </div>
+            <div style="display:flex; align-items:center; gap:4px; color:var(--text-secondary);">
+              <span style="color:var(--danger); font-size:9px;">⏹</span> ${formatDateTime(a.end_time)}
+            </div>
+            ${a.auto_status === 'ACTIVE' ? `<div style="margin-top:2px;">${getCountdown(a.end_time)}</div>` : ''}
+          </td>
+          <td style="padding: 12px 14px;">
+            <div style="display:flex; flex-direction:column; gap:4px; align-items:flex-start;">
+              ${submissionBadge}
+              ${autoStatusBadge}
+            </div>
+          </td>
+          <td style="padding: 12px 14px;">${marksDisplay}</td>
+          <td style="text-align:right; padding: 12px 18px;">
+            <div style="display:flex; gap:6px; justify-content:flex-end; align-items:center;">
+              <button class="btn btn-sm btn-secondary" title="View Details" style="padding:5px 10px; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px;" onclick="viewDetails(${a.id})">
                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                View Details
+                Details
               </button>
               ${a.submission_id 
-                ? `<button class="btn btn-sm btn-outline" style="display:inline-flex; align-items:center; gap:6px;" onclick="openSubmitModal(${a.id}, true)">
+                ? `<button class="btn btn-sm btn-outline" style="padding:5px 10px; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px;" onclick="openSubmitModal(${a.id}, true)">
                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                     View Submission
+                     Submission
                    </button>` 
-                : `<button class="btn btn-sm btn-primary" style="display:inline-flex; align-items:center; gap:6px;" onclick="openSubmitModal(${a.id}, false)">
-                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path><line x1="12" y1="11" x2="12" y2="17"></line><line x1="9" y1="14" x2="15" y2="14"></line></svg>
+                : `<button class="btn btn-sm btn-primary" style="padding:5px 10px; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px;" onclick="openSubmitModal(${a.id}, false)">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path><line x1="12" y1="11" x2="12" y2="17"></line><line x1="9" y1="14" x2="15" y2="14"></line></svg>
                      Submit
                    </button>`
               }
@@ -380,7 +444,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         </tr>`;
       }).join('');
     } else {
-      tbody.innerHTML = '<tr><td colspan="10" class="text-center text-danger" style="padding:20px;">Failed to load activities.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger" style="padding:20px;">Failed to load activities.</td></tr>';
     }
   };
 

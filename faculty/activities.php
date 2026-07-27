@@ -14,14 +14,14 @@ requireRole(['admin', 'hod', 'faculty', 'coordinator']);
   </div>
 </div>
 
-<div class="card">
-  <div class="card-header" style="flex-wrap:wrap;gap:12px;">
-    <h3>All Activities</h3>
-    <div class="filter-bar" style="margin:0">
-      <select class="form-control" id="filter-subject" onchange="loadActivities()">
+<div class="card" style="border-radius: 12px; overflow: hidden; box-shadow: var(--shadow-sm);">
+  <div class="card-header" style="padding: 16px 20px; display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between;">
+    <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700;">All Activities</h3>
+    <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+      <select class="form-control" id="filter-subject" onchange="loadActivities()" style="height: 38px; border-radius: 8px; font-size: 0.85rem;">
         <option value="">All Subjects</option>
       </select>
-      <select class="form-control" id="filter-type" onchange="loadActivities()">
+      <select class="form-control" id="filter-type" onchange="loadActivities()" style="height: 38px; border-radius: 8px; font-size: 0.85rem;">
         <option value="">All Types</option>
         <option value="assignment">Assignment</option>
         <option value="quiz">Quiz</option>
@@ -32,38 +32,37 @@ requireRole(['admin', 'hod', 'faculty', 'coordinator']);
         <option value="project_review">Project Review</option>
         <option value="presentation">Presentation</option>
       </select>
-      <select class="form-control" id="filter-status" onchange="loadActivities()">
-        <option value="">All Status</option>
-        <option value="draft">Draft</option>
+      <select class="form-control" id="filter-status" onchange="loadActivities()" style="height: 38px; border-radius: 8px; font-size: 0.85rem;">
+        <option value="">All Statuses</option>
         <option value="active">Active</option>
+        <option value="draft">Draft</option>
         <option value="completed">Completed</option>
         <option value="cancelled">Cancelled</option>
       </select>
-      <div class="search-filter">
-        <span class="icon">🔍</span>
-        <input type="text" id="search-act" placeholder="Search activities..." oninput="debounce(loadActivities, 400)()">
+      <div style="position: relative; min-width: 200px;">
+        <input type="text" class="form-control" id="search-act" placeholder="Search activities..." oninput="debounce(loadActivities, 300)()" style="padding-left: 36px; height: 38px; border-radius: 8px; font-size: 0.85rem;">
+        <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; display: flex; align-items: center;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </span>
       </div>
     </div>
   </div>
   <div class="card-body p-0">
     <div class="table-container">
-      <table id="act-table" data-sortable>
+      <table id="act-table" style="width: 100%; border-collapse: collapse;">
         <thead>
           <tr>
-            <th>Unit</th>
-            <th>Activity</th>
-            <th>Subject</th>
-            <th>Type</th>
-            <th>Max Marks</th>
-            <th>Time Window</th>
-            <th>Auto Status</th>
-            <th>Status</th>
-            <th>Marks</th>
-            <th data-sortable="false">Actions</th>
+            <th data-sortable="true" style="min-width: 220px; padding: 14px 18px;">Activity & Subject</th>
+            <th data-sortable="true" style="width: 110px; padding: 14px 14px;">Type</th>
+            <th data-sortable="true" style="width: 100px; padding: 14px 14px;">Max Marks</th>
+            <th data-sortable="true" style="min-width: 160px; padding: 14px 14px;">Timeline</th>
+            <th data-sortable="true" style="width: 130px; padding: 14px 14px;">Status</th>
+            <th data-sortable="true" style="width: 140px; padding: 14px 14px;">Grading Progress</th>
+            <th data-sortable="false" style="width: 200px; text-align: right; padding: 14px 18px;">Actions</th>
           </tr>
         </thead>
         <tbody id="act-tbody">
-          <tr><td colspan="9" class="text-center text-muted" style="padding:40px">Loading...</td></tr>
+          <tr><td colspan="7" class="text-center text-muted" style="padding:40px">Loading...</td></tr>
         </tbody>
       </table>
     </div>
@@ -109,14 +108,14 @@ requireRole(['admin', 'hod', 'faculty', 'coordinator']);
           <div class="form-group">
             <label>Activity Type *</label>
             <select class="form-control" id="act-type" data-required>
-              <option value="assignment">📝 Assignment</option>
-              <option value="quiz">❓ Quiz</option>
-              <option value="test">📋 Test</option>
-              <option value="seminar">🎤 Seminar</option>
-              <option value="viva">🗣️ Viva</option>
-              <option value="practical">🔬 Practical</option>
-              <option value="project_review">🔍 Project Review</option>
-              <option value="presentation">📽️ Presentation</option>
+              <option value="assignment">Assignment</option>
+              <option value="quiz">Quiz</option>
+              <option value="test">Test</option>
+              <option value="seminar">Seminar</option>
+              <option value="viva">Viva</option>
+              <option value="practical">Practical</option>
+              <option value="project_review">Project Review</option>
+              <option value="presentation">Presentation</option>
             </select>
             <div class="form-error"></div>
           </div>
@@ -196,31 +195,75 @@ async function loadActivities() {
   
   const tbody = document.getElementById('act-tbody');
   if (res.activities.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state"><div class="icon">📝</div><h3>No activities found</h3><p>Create your first CIE activity.</p></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center" style="padding:40px 0;"><div class="icon" style="margin-bottom:8px; display:flex; justify-content:center;"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-muted);"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg></div><h3>No activities found</h3><p>Create your first CIE activity.</p></td></tr>';
     return;
   }
   
   tbody.innerHTML = res.activities.map(a => {
-    const marksInfo = `${a.marks_entered}/${a.total_students}`;
+    const totalStudents = a.total_students || 0;
+    const marksEntered = a.marks_entered || 0;
+    const marksInfo = `${marksEntered} / ${totalStudents} Graded`;
+    const pctGraded = totalStudents > 0 ? Math.round((marksEntered / totalStudents) * 100) : 0;
     const formatDateTime = d => d ? new Date(d).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—';
     
+    // Status Badge
+    let statusBadgeHtml = '';
+    if (a.status === 'completed') {
+      statusBadgeHtml = '<span class="badge badge-success" style="font-size:0.7rem;">COMPLETED</span>';
+    } else if (a.status === 'active') {
+      statusBadgeHtml = '<span class="badge badge-primary" style="font-size:0.7rem;">ACTIVE</span>';
+    } else if (a.status === 'draft') {
+      statusBadgeHtml = '<span class="badge badge-secondary" style="font-size:0.7rem;">DRAFT</span>';
+    } else {
+      statusBadgeHtml = `<span class="badge badge-danger" style="font-size:0.7rem;">${a.status.toUpperCase()}</span>`;
+    }
+
     return `<tr>
-      <td><span class="badge badge-secondary">Unit ${a.unit_no}</span></td>
-      <td><strong>${a.name}</strong></td>
-      <td><span class="badge badge-info">${a.subject_code}</span></td>
-      <td><span class="activity-type">${typeIcons[a.type] || '📌'} ${a.type}</span></td>
-      <td>${parseFloat(a.max_marks).toFixed(0)}</td>
-      <td class="text-muted" style="font-size:0.8rem">
-        <div><span style="color:var(--success)">▶</span> ${formatDateTime(a.start_time)}</div>
-        <div><span style="color:var(--danger)">⏹</span> ${formatDateTime(a.end_time)}</div>
+      <td style="padding: 12px 18px;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px; flex-wrap:wrap;">
+          <span class="badge badge-secondary" style="font-size:0.68rem; font-weight:700; padding:2px 6px;">Unit ${a.unit_no}</span>
+          <strong style="font-size:0.92rem; color:var(--text-primary);">${a.name}</strong>
+        </div>
+        <div style="font-size:0.78rem; color:var(--text-muted); font-weight:500;">
+          ${a.subject_code} &bull; ${a.subject_name || ''}
+        </div>
       </td>
-      <td><span class="badge ${autoStatusClass[a.auto_status] || 'badge-secondary'}">${a.auto_status}</span></td>
-      <td><span class="badge ${statusClass[a.status] || 'badge-secondary'}">${a.status}</span></td>
-      <td>${marksInfo}</td>
-      <td>
-        <button class="btn btn-sm btn-secondary" onclick="editActivity(${a.id})">✏️</button>
-        <a href="/faculty/marks.php?activity=${a.id}" class="btn btn-sm btn-primary">📊 Review & Grade</a>
-        <button class="btn btn-sm btn-danger" onclick="deleteActivity(${a.id}, '${a.name.replace(/'/g, "\\'")}')">🗑️</button>
+      <td style="padding: 12px 14px;">
+        <span class="badge badge-primary" style="font-size:0.7rem; text-transform:uppercase;">${a.type}</span>
+      </td>
+      <td style="padding: 12px 14px;">
+        <strong style="font-size:0.9rem;">${parseFloat(a.max_marks).toFixed(1)}</strong>
+      </td>
+      <td style="font-size:0.78rem; padding: 12px 14px;">
+        <div style="display:flex; align-items:center; gap:4px; color:var(--text-secondary); margin-bottom:2px;">
+          <span style="color:var(--success); font-size:9px;">▶</span> ${formatDateTime(a.start_time)}
+        </div>
+        <div style="display:flex; align-items:center; gap:4px; color:var(--text-secondary);">
+          <span style="color:var(--danger); font-size:9px;">⏹</span> ${formatDateTime(a.end_time)}
+        </div>
+      </td>
+      <td style="padding: 12px 14px;">
+        ${statusBadgeHtml}
+      </td>
+      <td style="padding: 12px 14px;">
+        <div style="display:flex; flex-direction:column; gap:2px;">
+          <span style="font-size:0.8rem; font-weight:600; color:var(--text-primary);">${marksInfo}</span>
+          <small style="font-size:0.72rem; color:var(--text-muted); font-weight:600;">${pctGraded}% complete</small>
+        </div>
+      </td>
+      <td style="text-align:right; padding: 12px 18px;">
+        <div style="display:flex; gap:6px; justify-content:flex-end; align-items:center;">
+          <a href="/faculty/marks.php?activity=${a.id}" class="btn btn-sm btn-primary" title="Review & Grade Submissions" style="padding:5px 10px; font-size:0.75rem; display:inline-flex; align-items:center; gap:4px; text-decoration:none;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            Review & Grade
+          </a>
+          <button class="btn btn-sm btn-secondary" title="Edit Activity" style="padding:5px 8px; font-size:0.75rem; display:inline-flex; align-items:center;" onclick="editActivity(${a.id})">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+          </button>
+          <button class="btn btn-sm btn-danger" title="Delete Activity" style="padding:5px 8px; font-size:0.75rem; display:inline-flex; align-items:center;" onclick="deleteActivity(${a.id}, '${a.name.replace(/'/g, "\\'")}')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          </button>
+        </div>
       </td>
     </tr>`;
   }).join('');

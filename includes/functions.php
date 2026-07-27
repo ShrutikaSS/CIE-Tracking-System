@@ -40,6 +40,9 @@ function sanitize($input) {
  * Send JSON response and exit
  */
 function jsonResponse($data, $code = 200) {
+    if (ob_get_length()) {
+        ob_clean();
+    }
     http_response_code($code);
     header('Content-Type: application/json; charset=utf-8');
     echo json_encode($data, JSON_UNESCAPED_UNICODE);

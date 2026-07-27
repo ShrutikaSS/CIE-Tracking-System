@@ -40,19 +40,50 @@ const API = {
     try {
       showLoading();
       const response = await fetch(url, merged);
-      const data = await response.json();
       hideLoading();
 
-      if (!response.ok && response.status === 401) {
+      if (response.status === 401 || response.redirected) {
         window.location.href = '/index.php';
         return null;
+      }
+
+      const text = await response.text();
+      let data = null;
+
+      try {
+        data = JSON.parse(text);
+      } catch (jsonErr) {
+        // Fallback: try extracting JSON object or array from response if text had stray warnings
+        const jsonMatch = text.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+        if (jsonMatch) {
+          try {
+            data = JSON.parse(jsonMatch[0]);
+          } catch (e) {
+            data = null;
+          }
+        }
+        if (!data) {
+          if (text.includes('<!DOCTYPE html>') || text.includes('<html')) {
+            if (text.includes('login') || text.includes('Login')) {
+              window.location.href = '/index.php';
+              return null;
+            }
+          }
+          console.error('API Non-JSON Response from ' + url + ':', text);
+          Toast.error('Server response format error. Please try refreshing.');
+          return null;
+        }
+      }
+
+      if (!response.ok && data && data.message) {
+        Toast.error(data.message);
       }
 
       return data;
     } catch (error) {
       hideLoading();
-      console.error('API Error:', error);
-      Toast.error('Network error. Please try again.');
+      console.error('API Request Failed:', error);
+      Toast.error('Connection error. Please check your network connection.');
       return null;
     }
   },

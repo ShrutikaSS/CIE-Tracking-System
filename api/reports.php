@@ -25,13 +25,27 @@ switch ($action) {
         
         if (!$student) jsonResponse(['success' => false, 'message' => 'Student not found.'], 404);
         
+        if (in_array($user['role'], ['hod', 'faculty', 'coordinator'])) {
+            if ((int)$student['department_id'] !== (int)$user['department_id']) {
+                jsonResponse(['success' => false, 'message' => 'Access denied.'], 403);
+            }
+        }
+        if ($user['role'] === 'student') {
+            if ((int)$student['user_id'] !== (int)$user['id']) {
+                jsonResponse(['success' => false, 'message' => 'Access denied.'], 403);
+            }
+        }
+        
         // All marks grouped by subject
         $marks = dbFetchAll(
             "SELECT m.marks_obtained, a.name as activity_name, a.type, a.max_marks,
-                    s.name as subject_name, s.code as subject_code, s.id as subject_id
+                    s.name as subject_name, s.code as subject_code, s.id as subject_id,
+                    u2.name as faculty_name, a.activity_date
              FROM marks m 
              JOIN activities a ON m.activity_id = a.id 
              JOIN subjects s ON a.subject_id = s.id 
+             LEFT JOIN faculty f ON s.faculty_id = f.id
+             LEFT JOIN users u2 ON f.user_id = u2.id
              WHERE m.student_id = ? AND m.is_published = 1 
              ORDER BY s.code, a.activity_date",
             'i', [$studentId]
@@ -45,6 +59,8 @@ switch ($action) {
                 $subjects[$key] = [
                     'subject_name' => $m['subject_name'],
                     'subject_code' => $m['subject_code'],
+                    'subject_id'   => $m['subject_id'],
+                    'faculty_name' => $m['faculty_name'] ?: 'N/A',
                     'activities'   => [],
                     'total_obtained' => 0,
                     'total_max' => 0
@@ -78,6 +94,15 @@ switch ($action) {
         );
         
         if (!$subject) jsonResponse(['success' => false, 'message' => 'Subject not found.'], 404);
+        
+        if (in_array($user['role'], ['hod', 'faculty', 'coordinator'])) {
+            if ((int)$subject['department_id'] !== (int)$user['department_id']) {
+                jsonResponse(['success' => false, 'message' => 'Access denied.'], 403);
+            }
+        }
+        if ($user['role'] === 'student') {
+            jsonResponse(['success' => false, 'message' => 'Access denied.'], 403);
+        }
         
         // All students with their marks
         $students = dbFetchAll(

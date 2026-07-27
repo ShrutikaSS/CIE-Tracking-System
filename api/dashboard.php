@@ -33,10 +33,11 @@ switch ($action) {
             case 'hod':
                 $deptId = $user['department_id'];
                 $stats = [
-                    'students'   => dbFetchOne("SELECT COUNT(*) as cnt FROM students WHERE department_id = ?", 'i', [$deptId])['cnt'],
-                    'faculty'    => dbFetchOne("SELECT COUNT(*) as cnt FROM faculty WHERE department_id = ?", 'i', [$deptId])['cnt'],
-                    'subjects'   => dbFetchOne("SELECT COUNT(*) as cnt FROM subjects WHERE department_id = ? AND is_active = 1", 'i', [$deptId])['cnt'],
-                    'activities' => dbFetchOne("SELECT COUNT(*) as cnt FROM activities a JOIN subjects s ON a.subject_id = s.id WHERE s.department_id = ?", 'i', [$deptId])['cnt']
+                    'students'    => dbFetchOne("SELECT COUNT(*) as cnt FROM students WHERE department_id = ?", 'i', [$deptId])['cnt'],
+                    'faculty'     => dbFetchOne("SELECT COUNT(*) as cnt FROM faculty WHERE department_id = ?", 'i', [$deptId])['cnt'],
+                    'subjects'    => dbFetchOne("SELECT COUNT(*) as cnt FROM subjects WHERE department_id = ? AND is_active = 1", 'i', [$deptId])['cnt'],
+                    'activities'  => dbFetchOne("SELECT COUNT(*) as cnt FROM activities a JOIN subjects s ON a.subject_id = s.id WHERE s.department_id = ?", 'i', [$deptId])['cnt'],
+                    'submissions' => dbFetchOne("SELECT COUNT(*) as cnt FROM coordinator_submissions WHERE department_id = ?", 'i', [$deptId])['cnt']
                 ];
                 jsonResponse(['success' => true, 'stats' => $stats]);
                 break;

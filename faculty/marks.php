@@ -15,18 +15,33 @@ requireRole(['admin', 'hod', 'faculty', 'coordinator']);
 <div class="card mb-3">
   <div class="card-body">
     <div class="form-row">
-      <div class="form-group mb-0">
-        <label>Select Subject</label>
-        <select class="form-control" id="select-subject" onchange="loadActivitiesForSubject()">
-          <option value="">— Choose Subject —</option>
-        </select>
-      </div>
-      <div class="form-group mb-0">
-        <label>Select Activity</label>
-        <select class="form-control" id="select-activity" onchange="loadMarksForm()">
-          <option value="">— Choose Activity —</option>
-        </select>
-      </div>
+      <?php if (in_array($_SESSION['user_role'], ['admin', 'hod'])): ?>
+        <div class="form-group mb-0">
+          <label>Select Department</label>
+          <select class="form-control" id="select-department" onchange="loadSubjectsForDepartment()">
+            <option value="">— Choose Department —</option>
+          </select>
+        </div>
+        <div class="form-group mb-0">
+          <label>Select Subject</label>
+          <select class="form-control" id="select-subject" onchange="loadCIESummaryOnly()">
+            <option value="">— Choose Subject —</option>
+          </select>
+        </div>
+      <?php else: ?>
+        <div class="form-group mb-0">
+          <label>Select Subject</label>
+          <select class="form-control" id="select-subject" onchange="loadActivitiesForSubject()">
+            <option value="">— Choose Subject —</option>
+          </select>
+        </div>
+        <div class="form-group mb-0">
+          <label>Select Activity</label>
+          <select class="form-control" id="select-activity" onchange="loadMarksForm()">
+            <option value="">— Choose Activity —</option>
+          </select>
+        </div>
+      <?php endif; ?>
     </div>
   </div>
 </div>
@@ -126,30 +141,72 @@ requireRole(['admin', 'hod', 'faculty', 'coordinator']);
 </div>
 
 <script>
+const userRole = '<?= $_SESSION['user_role'] ?>';
+const userDeptId = '<?= $_SESSION['department_id'] ?? '' ?>';
 let currentActivity = null;
 let maxMarks = 0;
 let rawStudentsData = [];
 
 async function init() {
-  const res = await API.get('/api/subjects.php?for_faculty=1');
-  if (res && res.success) {
-    document.getElementById('select-subject').innerHTML = '<option value="">— Choose Subject —</option>' +
-      res.subjects.map(s => `<option value="${s.id}">${s.code} — ${s.name}</option>`).join('');
-  }
-  
-  // Auto-select from URL
-  const params = new URLSearchParams(window.location.search);
-  const actParam = params.get('activity');
-  if (actParam) {
-    // Load the activity to find its subject
-    const actRes = await API.get(`/api/activities.php?id=${actParam}`);
-    if (actRes && actRes.success) {
-      document.getElementById('select-subject').value = actRes.activity.subject_id;
-      await loadActivitiesForSubject();
-      document.getElementById('select-activity').value = actParam;
-      loadMarksForm();
+  if (userRole === 'admin' || userRole === 'hod') {
+    const res = await API.get('/api/departments.php');
+    if (res && res.success) {
+      const deptSelect = document.getElementById('select-department');
+      deptSelect.innerHTML = '<option value="">— Choose Department —</option>' +
+        res.departments.map(d => `<option value="${d.id}">${d.name} (${d.code})</option>`).join('');
+      
+      // Auto-select department if set
+      if (userDeptId) {
+        deptSelect.value = userDeptId;
+        await loadSubjectsForDepartment();
+      }
+    }
+  } else {
+    const res = await API.get('/api/subjects.php?for_faculty=1');
+    if (res && res.success) {
+      document.getElementById('select-subject').innerHTML = '<option value="">— Choose Subject —</option>' +
+        res.subjects.map(s => `<option value="${s.id}">${s.code} — ${s.name}</option>`).join('');
+    }
+    
+    // Auto-select from URL
+    const params = new URLSearchParams(window.location.search);
+    const actParam = params.get('activity');
+    if (actParam) {
+      const actRes = await API.get(`/api/activities.php?id=${actParam}`);
+      if (actRes && actRes.success) {
+        document.getElementById('select-subject').value = actRes.activity.subject_id;
+        await loadActivitiesForSubject();
+        document.getElementById('select-activity').value = actParam;
+        loadMarksForm();
+      }
     }
   }
+}
+
+async function loadSubjectsForDepartment() {
+  const deptId = document.getElementById('select-department').value;
+  const subSelect = document.getElementById('select-subject');
+  
+  if (!deptId) {
+    subSelect.innerHTML = '<option value="">— Choose Subject —</option>';
+    document.getElementById('cie-summary-card').classList.add('hidden');
+    return;
+  }
+  
+  const res = await API.get(`/api/subjects.php?department=${deptId}`);
+  if (res && res.success) {
+    subSelect.innerHTML = '<option value="">— Choose Subject —</option>' +
+      res.subjects.map(s => `<option value="${s.id}">${s.code} — ${s.name}</option>`).join('');
+  }
+}
+
+async function loadCIESummaryOnly() {
+  const subjectId = document.getElementById('select-subject').value;
+  if (!subjectId) {
+    document.getElementById('cie-summary-card').classList.add('hidden');
+    return;
+  }
+  await loadCIESummary();
 }
 
 async function loadActivitiesForSubject() {

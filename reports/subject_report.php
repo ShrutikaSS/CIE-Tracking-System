@@ -74,7 +74,7 @@ requireLogin();
 
 <!-- Student Detail Modal -->
 <div class="modal-overlay" id="modal-student-profile">
-  <div class="modal" style="max-width: 900px; width: 95%;">
+  <div class="modal" style="max-width: 800px; width: 90%; height: 560px; max-height: 85vh;">
     <div class="modal-header">
       <h3 style="display:flex; align-items:center; gap:8px;">
         <span>🎓 Student Academic Profile</span>
@@ -105,14 +105,14 @@ requireLogin();
 
       <!-- Tab Buttons -->
       <div style="display: flex; border-bottom: 2px solid var(--border-color); margin-bottom: 15px; gap: 10px; flex-wrap: wrap;">
-        <button class="tab-btn active-tab" onclick="switchModalTab('subject')" id="tab-modal-subject-btn" style="padding: 10px 15px; font-weight: 600; border: none; background: none; cursor: pointer; color: var(--primary); border-bottom: 2px solid var(--primary);">Subject-wise Marks</button>
-        <button class="tab-btn" onclick="switchModalTab('activity')" id="tab-modal-activity-btn" style="padding: 10px 15px; font-weight: 500; border: none; background: none; cursor: pointer; color: var(--text-secondary);">Activity-wise Details</button>
-        <button class="tab-btn" onclick="switchModalTab('attendance')" id="tab-modal-attendance-btn" style="padding: 10px 15px; font-weight: 500; border: none; background: none; cursor: pointer; color: var(--text-secondary);">Subject-wise Attendance</button>
+        <button class="tab-btn active-tab" onclick="switchModalTab('subject')" id="tab-modal-subject-btn">Subject-wise Marks</button>
+        <button class="tab-btn" onclick="switchModalTab('activity')" id="tab-modal-activity-btn">Activity-wise Details</button>
+        <button class="tab-btn" onclick="switchModalTab('attendance')" id="tab-modal-attendance-btn">Subject-wise Attendance</button>
       </div>
 
       <!-- Tab 1: Subject-wise Marks Container -->
       <div id="tab-modal-subject-container" class="tab-content-pane">
-        <div class="table-responsive" style="max-height: 350px;">
+        <div class="table-responsive" style="max-height: 220px;">
           <table class="table" style="font-size: 0.82rem; border-collapse: collapse; width: 100%;">
             <thead>
               <tr style="background: var(--primary); color: white;">
@@ -135,7 +135,7 @@ requireLogin();
 
       <!-- Tab 2: Activity-wise Details Container -->
       <div id="tab-modal-activity-container" class="tab-content-pane" style="display:none;">
-        <div class="table-responsive" style="max-height: 350px;">
+        <div class="table-responsive" style="max-height: 220px;">
           <table class="table" style="font-size: 0.82rem; border-collapse: collapse; width: 100%;">
             <thead>
               <tr>
@@ -157,7 +157,7 @@ requireLogin();
 
       <!-- Tab 3: Attendance Container -->
       <div id="tab-modal-attendance-container" class="tab-content-pane" style="display:none;">
-        <div class="table-responsive" style="max-height: 350px;">
+        <div class="table-responsive" style="max-height: 220px;">
           <table class="table" style="font-size: 0.82rem; border-collapse: collapse; width: 100%;">
             <thead>
               <tr>
@@ -188,12 +188,20 @@ requireLogin();
 <style>
 /* Custom styling for tabs inside modals */
 .tab-btn {
+  padding: 10px 15px;
+  font-weight: 500;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  border-bottom: 2px solid transparent;
   transition: all var(--transition-fast);
 }
 .tab-btn:hover {
   color: var(--primary);
 }
 .active-tab {
+  font-weight: 600;
   color: var(--primary) !important;
   border-bottom: 2px solid var(--primary) !important;
 }
@@ -505,12 +513,6 @@ function switchModalTab(tab) {
   subBtn.classList.remove('active-tab');
   actBtn.classList.remove('active-tab');
   attBtn.classList.remove('active-tab');
-  subBtn.style.color = 'var(--text-secondary)';
-  subBtn.style.borderBottom = 'none';
-  actBtn.style.color = 'var(--text-secondary)';
-  actBtn.style.borderBottom = 'none';
-  attBtn.style.color = 'var(--text-secondary)';
-  attBtn.style.borderBottom = 'none';
   
   subContainer.style.display = 'none';
   actContainer.style.display = 'none';
@@ -518,18 +520,12 @@ function switchModalTab(tab) {
 
   if (tab === 'subject') {
     subBtn.classList.add('active-tab');
-    subBtn.style.color = 'var(--primary)';
-    subBtn.style.borderBottom = '2px solid var(--primary)';
     subContainer.style.display = 'block';
   } else if (tab === 'activity') {
     actBtn.classList.add('active-tab');
-    actBtn.style.color = 'var(--primary)';
-    actBtn.style.borderBottom = '2px solid var(--primary)';
     actContainer.style.display = 'block';
   } else if (tab === 'attendance') {
     attBtn.classList.add('active-tab');
-    attBtn.style.color = 'var(--primary)';
-    attBtn.style.borderBottom = '2px solid var(--primary)';
     attContainer.style.display = 'block';
   }
 }

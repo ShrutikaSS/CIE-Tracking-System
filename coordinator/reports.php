@@ -124,6 +124,24 @@ if ($deptId) {
 </div>
 
 <style>
+.tab-btn {
+  padding: 10px 15px;
+  font-weight: 500;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  border-bottom: 2px solid transparent;
+  transition: all var(--transition-fast);
+}
+.tab-btn:hover {
+  color: var(--primary);
+}
+.active-tab {
+  font-weight: 600;
+  color: var(--primary) !important;
+  border-bottom: 2px solid var(--primary) !important;
+}
 .report-selector-card:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
@@ -656,9 +674,9 @@ function renderIndividualStudentPerformance(res) {
 
     <!-- Tab Buttons -->
     <div style="display: flex; border-bottom: 2px solid var(--border-color); margin-bottom: 20px; gap: 10px; flex-wrap: wrap;">
-      <button class="tab-btn active-tab" onclick="switchReportDetailTab('subject')" id="tab-rep-subject-btn" style="padding: 10px 15px; font-weight: 600; border: none; background: none; cursor: pointer; color: var(--primary); border-bottom: 2px solid var(--primary); font-size: 0.9rem;">Subject-wise Marks</button>
-      <button class="tab-btn" onclick="switchReportDetailTab('activity')" id="tab-rep-activity-btn" style="padding: 10px 15px; font-weight: 500; border: none; background: none; cursor: pointer; color: var(--text-secondary); font-size: 0.9rem;">Activity-wise Details</button>
-      <button class="tab-btn" onclick="switchReportDetailTab('attendance')" id="tab-rep-attendance-btn" style="padding: 10px 15px; font-weight: 500; border: none; background: none; cursor: pointer; color: var(--text-secondary); font-size: 0.9rem;">Subject-wise Attendance</button>
+      <button class="tab-btn active-tab" onclick="switchReportDetailTab('subject')" id="tab-rep-subject-btn" style="font-size: 0.9rem;">Subject-wise Marks</button>
+      <button class="tab-btn" onclick="switchReportDetailTab('activity')" id="tab-rep-activity-btn" style="font-size: 0.9rem;">Activity-wise Details</button>
+      <button class="tab-btn" onclick="switchReportDetailTab('attendance')" id="tab-rep-attendance-btn" style="font-size: 0.9rem;">Subject-wise Attendance</button>
     </div>
 
     <!-- Tab 1: Subject-wise Marks Container -->
@@ -743,12 +761,6 @@ function switchReportDetailTab(tab) {
   subBtn.classList.remove('active-tab');
   actBtn.classList.remove('active-tab');
   attBtn.classList.remove('active-tab');
-  subBtn.style.color = 'var(--text-secondary)';
-  subBtn.style.borderBottom = 'none';
-  actBtn.style.color = 'var(--text-secondary)';
-  actBtn.style.borderBottom = 'none';
-  attBtn.style.color = 'var(--text-secondary)';
-  attBtn.style.borderBottom = 'none';
   
   subContainer.style.display = 'none';
   actContainer.style.display = 'none';
@@ -756,18 +768,12 @@ function switchReportDetailTab(tab) {
 
   if (tab === 'subject') {
     subBtn.classList.add('active-tab');
-    subBtn.style.color = 'var(--primary)';
-    subBtn.style.borderBottom = '2px solid var(--primary)';
     subContainer.style.display = 'block';
   } else if (tab === 'activity') {
     actBtn.classList.add('active-tab');
-    actBtn.style.color = 'var(--primary)';
-    actBtn.style.borderBottom = '2px solid var(--primary)';
     actContainer.style.display = 'block';
   } else if (tab === 'attendance') {
     attBtn.classList.add('active-tab');
-    attBtn.style.color = 'var(--primary)';
-    attBtn.style.borderBottom = '2px solid var(--primary)';
     attContainer.style.display = 'block';
   }
 }

@@ -1,0 +1,32 @@
+Sr.No,Scenario Id,Scenario objective,Test Case Id,Test case Objective,Steps,Test Data,Expected Result,Actual Result,Status,Tester Name
+1,SC_CO_001,Verify Dashboard Statistics & Chart Rendering,TC_CO_001,Verify stats cards and class performance line chart render correctly at page load,"1. Log in as a Class Coordinator.
+2. Navigate to Dashboard.
+3. Inspect statistical counters and the performance trend chart.","Valid Coordinator Credentials (e.g., sneha.patil@cie.edu / password123)",Dashboard loads; statistics counter animations complete; average performance line chart displays correctly.,As per execution,Pass/Fail,Arya
+2,SC_CO_002,Verify Search Student Progress by Name,TC_CO_002,Verify search filter dynamically filters the list of students by name,"1. Go to Student Progress page.
+2. Type a student name in the search input.
+3. Verify filtered student list.","Search keyword: ""Rahul""","Only student records matching the name ""Rahul"" (e.g., Rahul Verma) are shown in the table.",As per execution,Pass/Fail,Arya
+3,SC_CO_003,Verify Student Progress Performance Filter,TC_CO_003,Filter students based on performance status range,"1. Go to Student Progress page.
+2. Select ""Excellent (> 75%)"" from the Performance Range dropdown.
+3. Verify the filtered list.",Performance Range: Excellent,The list updates to display only students with average marks greater than 75%.,As per execution,Pass/Fail,Arya
+4,SC_CO_004,Verify Student Profile Modal Tabs Navigation,TC_CO_004,Ensure student details modal opens and displays subject/activity/attendance data across tabs,"1. Go to Student Progress.
+2. Click Action / View for a student.
+3. Click through the tabs: Subject-wise Marks, Activity-wise Details, and Subject-wise Attendance.","Click action on a student record (e.g., Rahul Verma)",Modal opens; tabs switch successfully and display respective detailed table entries.,As per execution,Pass/Fail,Arya
+5,SC_CO_005,Verify Academic Report Preview Selection,TC_CO_005,Check if switching reports updates the preview document paper dynamically,"1. Go to Academic Reports page.
+2. Click on the Student Performance Report card.
+3. Observe preview panel title and content.",Select: Student Performance Report card,"Preview title updates to ""Report Preview: Student Performance"" and list displays student metrics.",As per execution,Pass/Fail,Arya
+6,SC_CO_006,Verify Exporting Reports to PDF,TC_CO_006,"Verify the ""Download PDF"" functionality triggers file download","1. Go to Academic Reports.
+2. Click the Download PDF button in the preview header.",Click: Download PDF,Browser initiates download of the PDF report file containing the current report preview data.,As per execution,Pass/Fail,Arya
+7,SC_CO_007,Verify HOD Message Alert Banner,TC_CO_007,Check that dashboard warns user of unread messages from HOD,"1. Ensure the database contains unread HOD messages for the coordinator's department.
+2. Login to Coordinator Dashboard.
+3. Observe top alert banner.",Active session for Coordinator with department id,A warning card is displayed at the top indicating unread HOD messages with a button to view them.,As per execution,Pass/Fail,Arya
+8,SC_CO_008,Access Coordinator Page Without Authentication,TC_CO_008,Ensure unauthorized users cannot access restricted coordinator pages,"1. Open an incognito browser window or log out.
+2. Attempt to directly enter URL http://localhost:8000/coordinator/reports.php.",URL: /coordinator/reports.php without active session,Direct access is blocked; system redirects user to the login page (login.php).,As per execution,Pass/Fail,Arya
+9,SC_CO_009,Change Password with Mismatched Passwords,TC_CO_009,Ensure password update fails when new and confirm passwords do not match,"1. Go to My Profile page.
+2. Fill Change Password form with valid current password.
+3. Enter mismatched new and confirm passwords.
+4. Submit the form.","Current: ""password123""
+New: ""NewPassword123""
+Confirm: ""DifferentPassword123""","Passwords mismatch; validation warning displays, and password update is prevented.",As per execution,Pass/Fail,Arya
+10,SC_CO_010,Searching Student with Non-Existent Keywords,TC_CO_010,Ensure searching with invalid/non-existent queries returns empty state gracefully,"1. Go to Student Progress page.
+2. Type non-existent keywords or special symbols in search box.
+3. Verify student list and badge.","Search keyword: ""!@#$%^&*"" or ""NonExistentName""","Table displays a friendly ""No students found"" message, and the count badge shows ""Showing 0 students"".",As per execution,Pass/Fail,Arya

@@ -594,7 +594,6 @@ body.sidebar-collapsed .nav-section-title {
 .nav-item:hover {
   background: rgba(255, 255, 255, 0.05);
   color: #ffffff;
-  transform: translateX(4px);
 }
 
 .nav-item.active {
@@ -833,25 +832,10 @@ body.sidebar-collapsed .nav-item:hover::after {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all var(--transition-fast);
   white-space: nowrap;
   text-decoration: none;
   line-height: 1.2;
-  position: relative;
-  overflow: hidden;
-}
-
-.btn::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(120deg, transparent 40%, rgba(255,255,255,0.15) 50%, transparent 60%);
-  transform: translateX(-100%);
-  transition: transform 0.5s ease;
-}
-
-.btn:hover::after {
-  transform: translateX(100%);
 }
 
 .btn:active {
@@ -881,8 +865,6 @@ body.sidebar-collapsed .nav-item:hover::after {
   background: var(--bg-hover);
   border-color: var(--text-muted);
   color: var(--text-primary);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .btn-outline {
@@ -893,8 +875,6 @@ body.sidebar-collapsed .nav-item:hover::after {
 
 .btn-outline:hover {
   background: var(--primary-lighter);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(13, 58, 113, 0.15);
 }
 
 .btn-success {
@@ -905,8 +885,6 @@ body.sidebar-collapsed .nav-item:hover::after {
 .btn-success:hover {
   background: #059669;
   color: white;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
 }
 
 .btn-danger {
@@ -917,8 +895,6 @@ body.sidebar-collapsed .nav-item:hover::after {
 .btn-danger:hover {
   background: #dc2626;
   color: white;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
 }
 
 .btn-sm {

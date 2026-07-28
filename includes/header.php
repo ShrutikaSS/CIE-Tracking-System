@@ -39,7 +39,6 @@ $initials = $user ? strtoupper(substr($user['name'], 0, 1) . substr(strrchr($use
   
   <!-- App CSS -->
   <link rel="stylesheet" href="<?= url('/assets/css/style.css') ?>">
-  <link rel="stylesheet" href="<?= url('/assets/css/star-border.css') ?>">
   
   <?php if (isset($user) && $user['role'] === 'coordinator'): ?>
   <!-- Class Coordinator Theme Color Overrides -->

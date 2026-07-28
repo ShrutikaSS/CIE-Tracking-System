@@ -256,29 +256,51 @@ function openBulkStudent() {
 async function uploadBulkStudents() {
   const fileInput = document.getElementById('bulk-student-file');
   if (fileInput.files.length === 0) {
-    Toast.error('Please select a CSV file.');
+    Toast.error('Please select an Excel (.xlsx, .xls) or CSV file.');
     return;
   }
   const file = fileInput.files[0];
-  const formData = new FormData();
-  formData.append('file', file);
-  
   const btn = document.querySelector('#modal-bulk-students .btn-primary');
   const oldText = btn.textContent;
   btn.textContent = 'Importing...';
   btn.disabled = true;
-  
+
   try {
-    const res = await API.upload('/api/bulk_students.php', formData);
+    let rows = [];
+    if (typeof XLSX !== 'undefined') {
+      try {
+        const buffer = await file.arrayBuffer();
+        const workbook = XLSX.read(buffer, { type: 'array' });
+        const firstSheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[firstSheetName];
+        rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+      } catch (xlsxErr) {
+        console.warn('XLSX parsing failed, falling back to server file upload', xlsxErr);
+      }
+    }
+
+    let res = null;
+    if (rows && rows.length > 0) {
+      res = await API.post('/api/bulk_students.php', { students: rows });
+    } else {
+      const formData = new FormData();
+      formData.append('file', file);
+      res = await API.upload('/api/bulk_students.php', formData);
+    }
+
     if (res && res.success) {
       Toast.success(res.message);
+      if (res.errors && res.errors.length > 0) {
+        res.errors.forEach(e => Toast.warning(e));
+      }
       Modal.close('modal-bulk-students');
       loadStudents();
     } else {
       Toast.error(res?.message || 'Import failed.');
     }
   } catch (err) {
-    Toast.error('An error occurred during upload.');
+    console.error('Upload Error:', err);
+    Toast.error('An error occurred during import.');
   } finally {
     btn.textContent = oldText;
     btn.disabled = false;
@@ -292,18 +314,18 @@ document.addEventListener('DOMContentLoaded', () => { loadDeptOptions(); loadStu
 <div class="modal-overlay" id="modal-bulk-students">
   <div class="modal">
     <div class="modal-header">
-      <h3>Import Students from CSV</h3>
+      <h3>Import Students from Excel / CSV</h3>
       <button class="modal-close" onclick="Modal.close('modal-bulk-students')">✕</button>
     </div>
     <div class="modal-body">
       <p class="text-muted mb-3" style="font-size:0.875rem; line-height:1.4;">
-        Upload a CSV file containing student records. The file must include the following headers in order:
-        <br><code>name,email,usn,prn_number,roll_number,semester,section,department_code,phone</code>
+        Upload an Excel (<code>.xlsx</code>, <code>.xls</code>) or CSV/TXT file containing student records.<br>
+        Required headers: <code>name</code>, <code>email</code>, <code>usn</code> (optional: <code>prn_number</code>, <code>roll_number</code>, <code>semester</code>, <code>section</code>, <code>department_code</code>, <code>phone</code>).
       </p>
       <form id="form-bulk-students">
         <div class="form-group">
-          <label>Choose CSV File *</label>
-          <input type="file" id="bulk-student-file" accept=".csv" class="form-control" style="padding:10px;">
+          <label>Choose File (.xlsx, .xls, .csv, .txt) *</label>
+          <input type="file" id="bulk-student-file" accept=".xlsx,.xls,.csv,.txt" class="form-control" style="padding:10px;">
         </div>
       </form>
     </div>

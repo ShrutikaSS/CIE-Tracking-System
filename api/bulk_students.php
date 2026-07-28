@@ -1,6 +1,6 @@
 <?php
 /**
- * Bulk Student Import API
+ * Bulk Student Import API (Supports Excel, CSV, TXT with smart header matching)
  */
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/functions.php';
@@ -14,44 +14,92 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     jsonResponse(['success' => false, 'message' => 'Invalid request method.'], 405);
 }
 
-if (!isset($_FILES['file']) || $_FILES['file']['error'] !== UPLOAD_ERR_OK) {
-    jsonResponse(['success' => false, 'message' => 'No file uploaded or file upload error.'], 400);
-}
-
-$fileTmpPath = $_FILES['file']['tmp_name'];
-$fileName = $_FILES['file']['name'];
-$fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-
-if ($fileExtension !== 'csv') {
-    jsonResponse(['success' => false, 'message' => 'Only CSV files are allowed.'], 400);
-}
-
-// Map department codes to IDs for validation and insertion
-$depts = dbFetchAll("SELECT id, code FROM departments");
+// Map department codes and names to IDs
+$depts = dbFetchAll("SELECT id, name, code FROM departments");
 $deptMap = [];
 foreach ($depts as $d) {
     $deptMap[strtoupper($d['code'])] = (int)$d['id'];
+    $deptMap[strtoupper($d['name'])] = (int)$d['id'];
 }
 
-$handle = fopen($fileTmpPath, 'r');
-if ($handle === false) {
-    jsonResponse(['success' => false, 'message' => 'Failed to open CSV file.'], 500);
+function removeBOM($str) {
+    return preg_replace('/^\xEF\xBB\xBF/', '', trim((string)$str));
 }
 
-// Read header row
-$headers = fgetcsv($handle);
-// Expected headers: name, email, usn, prn_number, roll_number, semester, section, department_code, phone
-$expectedHeaders = ['name', 'email', 'usn', 'prn_number', 'roll_number', 'semester', 'section', 'department_code', 'phone'];
+function normalizeKey($key) {
+    $clean = strtolower(removeBOM($key));
+    $clean = preg_replace('/[^a-z0-9]/', '_', $clean);
+    $clean = preg_replace('/_+/', '_', trim($clean, '_'));
+    
+    if (in_array($clean, ['name', 'full_name', 'student_name'])) return 'name';
+    if (in_array($clean, ['email', 'email_address', 'mail'])) return 'email';
+    if (in_array($clean, ['usn', 'usn_number', 'student_usn'])) return 'usn';
+    if (in_array($clean, ['prn', 'prn_number'])) return 'prn_number';
+    if (in_array($clean, ['roll', 'roll_no', 'roll_number'])) return 'roll_number';
+    if (in_array($clean, ['semester', 'sem'])) return 'semester';
+    if (in_array($clean, ['section', 'sec', 'div', 'division'])) return 'section';
+    if (in_array($clean, ['department', 'dept', 'department_code', 'dept_code', 'branch'])) return 'department_code';
+    if (in_array($clean, ['phone', 'mobile', 'contact', 'phone_number'])) return 'phone';
+    return $clean;
+}
 
-// Simple case-insensitive verification
-if ($headers) {
-    $headers = array_map('trim', array_map('strtolower', $headers));
-    // If headers don't match expected names, assume no headers or invalid format
-    if (!in_array('usn', $headers) || !in_array('email', $headers) || !in_array('name', $headers)) {
-        jsonResponse(['success' => false, 'message' => 'CSV must contain at least "name", "email", and "usn" headers.'], 400);
+$rowsToProcess = [];
+
+// 1. Check if payload is JSON (from browser-side SheetJS / Excel parser)
+$jsonInput = getJsonBody();
+if (!empty($jsonInput) && isset($jsonInput['students']) && is_array($jsonInput['students'])) {
+    foreach ($jsonInput['students'] as $rawRow) {
+        $normalizedRow = [];
+        foreach ($rawRow as $k => $v) {
+            $normalizedRow[normalizeKey($k)] = trim((string)$v);
+        }
+        $rowsToProcess[] = $normalizedRow;
+    }
+}
+// 2. Fallback to raw file upload handling ($_FILES['file'])
+elseif (isset($_FILES['file']) && $_FILES['file']['error'] === UPLOAD_ERR_OK) {
+    $fileTmpPath = $_FILES['file']['tmp_name'];
+    $fileContent = file_get_contents($fileTmpPath);
+    if ($fileContent === false) {
+        jsonResponse(['success' => false, 'message' => 'Failed to read uploaded file.'], 400);
+    }
+    
+    $fileContent = removeBOM($fileContent);
+    $lines = preg_split('/\r\n|\r|\n/', trim($fileContent));
+    
+    if (count($lines) < 2) {
+        jsonResponse(['success' => false, 'message' => 'File is empty or has no data rows.'], 400);
+    }
+    
+    // Detect delimiter (, or \t or ;)
+    $firstLine = $lines[0];
+    $delimiter = ',';
+    if (substr_count($firstLine, "\t") > substr_count($firstLine, ",")) {
+        $delimiter = "\t";
+    } elseif (substr_count($firstLine, ";") > substr_count($firstLine, ",")) {
+        $delimiter = ";";
+    }
+    
+    $rawHeaders = str_getcsv($firstLine, $delimiter);
+    $headers = array_map('normalizeKey', $rawHeaders);
+    
+    for ($i = 1; $i < count($lines); $i++) {
+        if (trim($lines[$i]) === '') continue;
+        $rowCols = str_getcsv($lines[$i], $delimiter);
+        $rowObj = [];
+        foreach ($headers as $idx => $hKey) {
+            if ($hKey) {
+                $rowObj[$hKey] = trim((string)($rowCols[$idx] ?? ''));
+            }
+        }
+        $rowsToProcess[] = $rowObj;
     }
 } else {
-    jsonResponse(['success' => false, 'message' => 'Empty CSV file.'], 400);
+    jsonResponse(['success' => false, 'message' => 'No valid data rows or file received.'], 400);
+}
+
+if (empty($rowsToProcess)) {
+    jsonResponse(['success' => false, 'message' => 'No student data rows found in the file.'], 400);
 }
 
 $createdCount = 0;
@@ -62,16 +110,15 @@ $rowNum = 1;
 $userRole = currentUser()['role'];
 $userDeptId = (int)(currentUser()['department_id'] ?? 0);
 
-while (($row = fgetcsv($handle)) !== false) {
+// Default department code fallback if single department exists or user is HOD
+$defaultDeptCode = '';
+if ($userDeptId) {
+    $dObj = dbFetchOne("SELECT code FROM departments WHERE id = ?", 'i', [$userDeptId]);
+    if ($dObj) $defaultDeptCode = $dObj['code'];
+}
+
+foreach ($rowsToProcess as $data) {
     $rowNum++;
-    
-    // Combine headers with row values
-    $data = array_combine($headers, array_pad($row, count($headers), ''));
-    if (!$data) {
-        $errors[] = "Row {$rowNum}: Invalid column structure.";
-        $skippedCount++;
-        continue;
-    }
     
     $name   = trim($data['name'] ?? '');
     $email  = trim($data['email'] ?? '');
@@ -80,39 +127,43 @@ while (($row = fgetcsv($handle)) !== false) {
     $roll   = trim($data['roll_number'] ?? '');
     $sem    = (int)($data['semester'] ?? 1);
     $sec    = trim($data['section'] ?? 'A');
-    $deptCode = strtoupper(trim($data['department_code'] ?? ''));
+    $deptCode = strtoupper(trim($data['department_code'] ?? $defaultDeptCode));
     $phone  = trim($data['phone'] ?? '');
     
-    if (empty($name) || empty($email) || empty($usn) || empty($deptCode)) {
-        $errors[] = "Row {$rowNum}: Missing required fields (name, email, usn, department_code).";
+    if (empty($name) || empty($email) || empty($usn)) {
+        $errors[] = "Row {$rowNum}: Missing required student fields (name, email, usn).";
         $skippedCount++;
         continue;
     }
     
     // Resolve department
     if (!isset($deptMap[$deptCode])) {
-        $errors[] = "Row {$rowNum}: Invalid department code '{$deptCode}'.";
-        $skippedCount++;
-        continue;
+        // Fallback to user department
+        if ($userDeptId) {
+            $deptId = $userDeptId;
+        } else {
+            $errors[] = "Row {$rowNum}: Department code '{$deptCode}' not recognized.";
+            $skippedCount++;
+            continue;
+        }
+    } else {
+        $deptId = $deptMap[$deptCode];
     }
     
-    $deptId = $deptMap[$deptCode];
-    
-    // If HOD, can only import into their own department
+    // HOD scope check
     if ($userRole === 'hod' && $deptId !== $userDeptId) {
-        $errors[] = "Row {$rowNum}: HOD cannot import students to department code '{$deptCode}'.";
+        $errors[] = "Row {$rowNum}: HOD cannot import students for department '{$deptCode}'.";
         $skippedCount++;
         continue;
     }
     
-    // Check if user email exists
+    // Unique checks
     if (dbFetchOne("SELECT id FROM users WHERE email = ?", 's', [$email])) {
         $errors[] = "Row {$rowNum}: Email '{$email}' already exists.";
         $skippedCount++;
         continue;
     }
     
-    // Check if USN exists
     if (dbFetchOne("SELECT id FROM students WHERE usn = ?", 's', [$usn])) {
         $errors[] = "Row {$rowNum}: USN '{$usn}' already exists.";
         $skippedCount++;
@@ -139,7 +190,6 @@ while (($row = fgetcsv($handle)) !== false) {
     );
     
     if (!$studentId) {
-        // Rollback user creation
         dbQuery("DELETE FROM users WHERE id = ?", 'i', [$userId]);
         $errors[] = "Row {$rowNum}: Database error creating student profile.";
         $skippedCount++;
@@ -149,12 +199,11 @@ while (($row = fgetcsv($handle)) !== false) {
     $createdCount++;
 }
 
-fclose($handle);
-
 jsonResponse([
     'success' => true,
-    'message' => "Import complete. Created {$createdCount} students. Skipped {$skippedCount} rows.",
+    'message' => "Import complete. Successfully created {$createdCount} students. Skipped {$skippedCount} rows.",
     'created' => $createdCount,
     'skipped' => $skippedCount,
     'errors' => $errors
 ]);
+

@@ -511,34 +511,65 @@ function downloadMarksTemplate() {
 
 async function uploadBulkMarks() {
   const fileInput = document.getElementById('bulk-marks-file');
-  if (fileInput.files.length === 0) { Toast.error('Please select a CSV file.'); return; }
+  if (fileInput.files.length === 0) { Toast.error('Please select a file.'); return; }
   
   const file = fileInput.files[0];
-  const text = await file.text();
-  const lines = text.trim().split('\n');
-  if (lines.length < 2) { Toast.error('CSV file is empty or has no data rows.'); return; }
-  
-  const headers = lines[0].toLowerCase().split(',').map(h => h.trim());
-  const usnIdx = headers.indexOf('usn');
-  const marksIdx = headers.indexOf('marks');
-  const remarksIdx = headers.indexOf('remarks');
-  
-  if (usnIdx === -1 || marksIdx === -1) {
-    Toast.error('CSV must have "usn" and "marks" columns.');
-    return;
+  let rows = [];
+
+  // Try SheetJS first (handles xlsx, xls, csv, txt)
+  if (typeof XLSX !== 'undefined') {
+    try {
+      const buffer = await file.arrayBuffer();
+      const workbook = XLSX.read(buffer, { type: 'array' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+    } catch (e) {
+      console.warn('SheetJS parse failed, falling back to text parse', e);
+    }
   }
-  
-  let filled = 0;
-  for (let i = 1; i < lines.length; i++) {
-    const cols = lines[i].split(',').map(c => c.trim());
-    const usn = cols[usnIdx] || '';
-    const marks = cols[marksIdx] || '';
-    const remarks = remarksIdx !== -1 ? (cols[remarksIdx] || '') : '';
+
+  // Fallback: parse as plain text CSV
+  if (!rows.length) {
+    const text = await file.text();
+    // Strip BOM
+    const clean = text.replace(/^\uFEFF/, '').trim();
+    const lines = clean.split(/\r\n|\r|\n/);
+    if (lines.length < 2) { Toast.error('File is empty or has no data rows.'); return; }
     
-    if (!usn) continue;
+    const rawHeaders = lines[0].split(/[,\t;]/).map(h => h.trim());
+    for (let i = 1; i < lines.length; i++) {
+      if (!lines[i].trim()) continue;
+      const cols = lines[i].split(/[,\t;]/).map(c => c.trim());
+      const obj = {};
+      rawHeaders.forEach((h, idx) => { obj[h] = cols[idx] || ''; });
+      rows.push(obj);
+    }
+  }
+
+  if (!rows.length) { Toast.error('No data rows found in the file.'); return; }
+
+  // Normalize header keys
+  function norm(k) {
+    const c = k.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+    if (['usn', 'usn_number', 'student_usn'].includes(c)) return 'usn';
+    if (['marks', 'marks_obtained', 'score', 'mark'].includes(c)) return 'marks';
+    if (['remarks', 'remark', 'comment', 'comments'].includes(c)) return 'remarks';
+    return c;
+  }
+
+  let filled = 0;
+  rows.forEach(rawRow => {
+    const row = {};
+    Object.keys(rawRow).forEach(k => { row[norm(k)] = String(rawRow[k]).trim(); });
+
+    const usn = row.usn || '';
+    const marks = row.marks || '';
+    const remarks = row.remarks || '';
+    
+    if (!usn) return;
     
     const student = rawStudentsData.find(s => s.usn.toLowerCase() === usn.toLowerCase());
-    if (!student) continue;
+    if (!student) return;
     
     const marksInput = document.querySelector(`[data-student="${student.student_id}"]`);
     const remarksInput = document.querySelector(`[data-remarks="${student.student_id}"]`);
@@ -551,10 +582,10 @@ async function uploadBulkMarks() {
     if (remarksInput && remarks !== '') {
       remarksInput.value = remarks;
     }
-  }
+  });
   
   Modal.close('modal-bulk-marks');
-  Toast.success(`Filled marks for ${filled} students from CSV. Click "Save Draft" to persist.`);
+  Toast.success(`Filled marks for ${filled} students. Click "Save Draft" to persist.`);
 }
 
 document.addEventListener('DOMContentLoaded', init);
@@ -564,12 +595,12 @@ document.addEventListener('DOMContentLoaded', init);
 <div class="modal-overlay" id="modal-bulk-marks">
   <div class="modal">
     <div class="modal-header">
-      <h3 id="modal-bulk-marks-title">Import Marks CSV</h3>
+      <h3 id="modal-bulk-marks-title">Import Marks</h3>
       <button class="modal-close" onclick="Modal.close('modal-bulk-marks')">✕</button>
     </div>
     <div class="modal-body">
       <p class="text-muted mb-3" style="font-size:0.875rem; line-height:1.5;">
-        Upload a CSV with columns: <code>usn,marks,remarks</code><br>
+        Upload an Excel (<code>.xlsx</code>, <code>.xls</code>) or CSV/TXT file with columns: <code>usn</code>, <code>marks</code>, <code>remarks</code>.<br>
         Marks will be filled into the form. You must click <strong>Save Draft</strong> or <strong>Publish</strong> after importing.
       </p>
       <div class="mb-3">
@@ -579,8 +610,8 @@ document.addEventListener('DOMContentLoaded', init);
       </div>
       <form id="form-bulk-marks">
         <div class="form-group">
-          <label>Choose CSV File *</label>
-          <input type="file" id="bulk-marks-file" accept=".csv" class="form-control" style="padding:10px;">
+          <label>Choose File (.xlsx, .xls, .csv, .txt) *</label>
+          <input type="file" id="bulk-marks-file" accept=".xlsx,.xls,.csv,.txt" class="form-control" style="padding:10px;">
         </div>
       </form>
     </div>
@@ -592,4 +623,5 @@ document.addEventListener('DOMContentLoaded', init);
 </div>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
+
 

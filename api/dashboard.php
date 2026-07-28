@@ -81,7 +81,7 @@ switch ($action) {
                 $pending = max(0, $total_activities - $completed);
                 
                 $avg_pct = dbFetchOne(
-                    "SELECT ROUND(AVG(m.marks_obtained / a.max_marks * 100), 1) as avg_pct 
+                    "SELECT LEAST(100.0, GREATEST(0.0, ROUND(AVG(m.marks_obtained / a.max_marks * 100), 1))) as avg_pct 
                      FROM marks m JOIN activities a ON m.activity_id = a.id 
                      WHERE m.student_id = ? AND m.is_published = 1 AND a.status IN ('active', 'completed')", 'i', [$stuId]
                 )['avg_pct'] ?? 0;

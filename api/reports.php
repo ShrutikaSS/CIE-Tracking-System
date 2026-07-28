@@ -74,7 +74,7 @@ switch ($action) {
         // Calculate percentages
         foreach ($subjects as &$sub) {
             $sub['percentage'] = $sub['total_max'] > 0 
-                ? round($sub['total_obtained'] / $sub['total_max'] * 100, 1) 
+                ? min(100.0, max(0.0, round($sub['total_obtained'] / $sub['total_max'] * 100, 1))) 
                 : 0;
         }
         
@@ -104,17 +104,17 @@ switch ($action) {
             jsonResponse(['success' => false, 'message' => 'Access denied.'], 403);
         }
         
-        // All students with their marks
+        // All students with their marks for this specific subject
         $students = dbFetchAll(
             "SELECT s.id as student_id, u.name, s.usn, s.section,
-                    ROUND(SUM(m.marks_obtained), 2) as total_obtained,
-                    ROUND(SUM(a.max_marks), 2) as total_max,
+                    ROUND(COALESCE(SUM(m.marks_obtained), 0), 2) as total_obtained,
+                    ROUND(COALESCE(SUM(CASE WHEN m.id IS NOT NULL THEN a.max_marks ELSE 0 END), 0), 2) as total_max,
                     COUNT(m.id) as activities_completed
              FROM students s
              JOIN users u ON s.user_id = u.id
              JOIN subject_students ss ON ss.student_id = s.id
-             LEFT JOIN marks m ON m.student_id = s.id AND m.is_published = 1
-             LEFT JOIN activities a ON m.activity_id = a.id AND a.subject_id = ?
+             LEFT JOIN activities a ON a.subject_id = ?
+             LEFT JOIN marks m ON m.activity_id = a.id AND m.student_id = s.id AND m.is_published = 1
              WHERE ss.subject_id = ?
              GROUP BY s.id, u.name, s.usn, s.section
              ORDER BY s.usn",
@@ -123,7 +123,7 @@ switch ($action) {
         
         foreach ($students as &$stu) {
             $stu['percentage'] = ($stu['total_max'] > 0) 
-                ? round($stu['total_obtained'] / $stu['total_max'] * 100, 1) 
+                ? min(100.0, max(0.0, round(($stu['total_obtained'] / $stu['total_max']) * 100, 1))) 
                 : 0;
         }
         
@@ -131,9 +131,9 @@ switch ($action) {
         $percentages = array_column($students, 'percentage');
         $stats = [
             'total_students' => count($students),
-            'average' => !empty($percentages) ? round(array_sum($percentages) / count($percentages), 1) : 0,
-            'highest' => !empty($percentages) ? max($percentages) : 0,
-            'lowest'  => !empty($percentages) ? min($percentages) : 0,
+            'average' => !empty($percentages) ? min(100.0, max(0.0, round(array_sum($percentages) / count($percentages), 1))) : 0,
+            'highest' => !empty($percentages) ? min(100.0, max($percentages)) : 0,
+            'lowest'  => !empty($percentages) ? max(0.0, min($percentages)) : 0,
             'pass_rate' => !empty($percentages) 
                 ? round(count(array_filter($percentages, fn($p) => $p >= 40)) / count($percentages) * 100, 1) 
                 : 0

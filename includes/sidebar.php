@@ -79,6 +79,7 @@ function navItem($href, $icon, $label, $currentPath, $count = null) {
       <?= navItem('/student/activities.php', $icons['activities'], 'My Activities', $currentPath) ?>
       <?= navItem('/student/marks.php', $icons['marks'], 'My Marks', $currentPath) ?>
       <?= navItem('/student/performance.php', $icons['progress'], 'Academic Progress', $currentPath) ?>
+      <?= navItem('/reports/cumulative_report.php', $icons['reports'], 'Cumulative Report', $currentPath) ?>
       <?= navItem('/student/attendance.php', $icons['attendance'], 'Attendance', $currentPath) ?>
     </div>
     <?php else: ?>
@@ -106,6 +107,7 @@ function navItem($href, $icon, $label, $currentPath, $count = null) {
       <div class="nav-section-title">Reports</div>
       <?= navItem('/reports/student_report.php', $icons['student_report'], 'Student Report', $currentPath) ?>
       <?= navItem('/reports/subject_report.php', $icons['subject_report'], 'Subject Report', $currentPath) ?>
+      <?= navItem('/reports/cumulative_report.php', $icons['reports'], 'Cumulative Report', $currentPath) ?>
     </div>
     
     <?php elseif ($userRole === 'hod'): ?>
@@ -122,6 +124,7 @@ function navItem($href, $icon, $label, $currentPath, $count = null) {
     <div class="nav-section">
       <div class="nav-section-title">Activities & Reports</div>
       <?= navItem('/faculty/activities.php', $icons['activities'], 'Activities', $currentPath) ?>
+      <?= navItem('/reports/cumulative_report.php', $icons['reports'], 'Cumulative Report', $currentPath) ?>
       <?= navItem('/hod/reports.php', $icons['reports'], 'Reports Center', $currentPath) ?>
       <?= navItem('/hod/notifications.php', $icons['notifications'], 'Notifications', $currentPath) ?>
     </div>
@@ -137,6 +140,7 @@ function navItem($href, $icon, $label, $currentPath, $count = null) {
       <div class="nav-section-title">Reports</div>
       <?= navItem('/reports/student_report.php', $icons['student_report'], 'Student Report', $currentPath) ?>
       <?= navItem('/reports/subject_report.php', $icons['subject_report'], 'Subject Report', $currentPath) ?>
+      <?= navItem('/reports/cumulative_report.php', $icons['reports'], 'Cumulative Report', $currentPath) ?>
     </div>
     
     <?php elseif ($userRole === 'coordinator'): ?>

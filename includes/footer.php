@@ -113,7 +113,6 @@
   </script>
   
   <!-- App JS -->
-  <script src="<?= url('/assets/js/app.js') ?>"></script>
-  <script src="<?= url('/assets/js/star-border.js') ?>"></script>
+  <script src="/assets/js/app.js"></script>
 </body>
 </html>

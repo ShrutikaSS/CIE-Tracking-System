@@ -73,7 +73,10 @@ const API = {
             }
           }
           console.error('API Non-JSON Response from ' + url + ':', text);
-          Toast.error('Server response format error. Please try refreshing.');
+          const errMsg = text.includes('Database connection failed')
+            ? 'Database connection error. Please check your MySQL server.'
+            : 'Server response format error. Please try refreshing.';
+          Toast.error(errMsg);
           return null;
         }
       }

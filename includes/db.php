@@ -10,15 +10,30 @@ define('DB_PASS', '');
 define('DB_NAME', 'cie_tracking');
 define('DB_PORT', 3306);
 
-// Create connection
-$conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT);
+// Create connection safely without throwing uncaught HTML exceptions
+mysqli_report(MYSQLI_REPORT_OFF);
+$conn = @new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT);
+
+// Fallback to port 3306 if primary port fails
+if ($conn->connect_error && DB_PORT != 3306) {
+    $conn = @new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME, 3306);
+}
 
 // Check connection
 if ($conn->connect_error) {
-    die(json_encode([
-        'success' => false,
-        'message' => 'Database connection failed: ' . $conn->connect_error
-    ]));
+    $isApi = (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
+        || (isset($_SERVER['CONTENT_TYPE']) && str_contains($_SERVER['CONTENT_TYPE'], 'application/json'))
+        || (isset($_SERVER['SCRIPT_NAME']) && str_contains($_SERVER['SCRIPT_NAME'], '/api/'));
+
+    if ($isApi) {
+        header('Content-Type: application/json');
+        die(json_encode([
+            'success' => false,
+            'message' => 'Database connection failed: ' . $conn->connect_error
+        ]));
+    } else {
+        die("Database connection failed: " . $conn->connect_error);
+    }
 }
 
 // Set charset

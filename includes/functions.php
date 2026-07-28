@@ -36,12 +36,16 @@ function sanitize($input) {
     return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');
 }
 
+if (ob_get_level() === 0) {
+    ob_start();
+}
+
 /**
  * Send JSON response and exit
  */
 function jsonResponse($data, $code = 200) {
-    if (ob_get_length()) {
-        ob_clean();
+    while (ob_get_level() > 0) {
+        @ob_end_clean();
     }
     http_response_code($code);
     header('Content-Type: application/json; charset=utf-8');
@@ -53,7 +57,7 @@ function jsonResponse($data, $code = 200) {
  * Get request method
  */
 function requestMethod() {
-    return $_SERVER['REQUEST_METHOD'];
+    return $_SERVER['REQUEST_METHOD'] ?? 'GET';
 }
 
 /**

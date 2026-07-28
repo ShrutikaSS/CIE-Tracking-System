@@ -54,13 +54,16 @@ requireRole(['admin', 'hod', 'faculty', 'coordinator']);
       <div class="text-muted" id="activity-meta"></div>
     </div>
     <div class="d-flex gap-2" style="align-items:center;">
-      <button class="btn btn-outline-primary" onclick="autoFillMarks()" style="display:inline-flex; align-items:center; gap:6px;" title="Fills marks from auto-calculated submission values">
+      <button class="btn btn-secondary" id="btn-import-csv" onclick="openBulkMarks()" style="display:inline-flex; align-items:center; gap:6px;">
+        📤 Import Marks CSV
+      </button>
+      <button class="btn btn-outline-primary" id="btn-autofill" onclick="autoFillMarks()" style="display:inline-flex; align-items:center; gap:6px;" title="Fills marks from auto-calculated submission values">
         ⚡ Use Default Marks
       </button>
-      <button class="btn btn-outline" onclick="saveMarks(false)" style="display:inline-flex; align-items:center; gap:6px;">
+      <button class="btn btn-outline" id="btn-save-draft" onclick="saveMarks(false)" style="display:inline-flex; align-items:center; gap:6px;">
         💾 Save Draft
       </button>
-      <button class="btn btn-primary" onclick="submitAndPublishMarks()" style="display:inline-flex; align-items:center; gap:6px; font-weight:700; padding:10px 18px; box-shadow: 0 2px 8px rgba(26,115,232,0.3);">
+      <button class="btn btn-primary" id="btn-publish" onclick="submitAndPublishMarks()" style="display:inline-flex; align-items:center; gap:6px; font-weight:700; padding:10px 18px; box-shadow: 0 2px 8px rgba(26,115,232,0.3);">
         🚀 Submit & Publish Marks to Students
       </button>
     </div>
@@ -252,6 +255,14 @@ async function loadMarksForm() {
     Status: <span class="badge ${currentActivity.status === 'completed' ? 'badge-success' : 'badge-primary'}">${currentActivity.status}</span>
   `;
   
+  // Disable actions if already published
+  const anyPublished = rawStudentsData.some(s => s.is_published == 1);
+  const lockActions = anyPublished && userRole !== 'admin' && userRole !== 'hod';
+  document.getElementById('btn-import-csv').disabled = lockActions;
+  document.getElementById('btn-autofill').disabled = lockActions;
+  document.getElementById('btn-save-draft').disabled = lockActions;
+  document.getElementById('btn-publish').disabled = lockActions;
+  
   // Marks Table
   document.getElementById('marks-card').classList.remove('hidden');
   renderMarksTable();
@@ -336,6 +347,8 @@ function renderMarksTable() {
       submissionCell = `<span class="badge badge-secondary" style="font-size:0.75rem;">Pending</span>`;
     }
     
+    const isDisabled = (published && userRole !== 'admin' && userRole !== 'hod') ? 'disabled' : '';
+    
     return `<tr data-student-id="${s.student_id}">
       <td class="text-muted">${i + 1}</td>
       <td><span class="badge badge-info">${s.usn}</span></td>
@@ -348,13 +361,13 @@ function renderMarksTable() {
                min="0" max="${maxMarks}" step="0.5"
                data-student="${s.student_id}"
                onchange="validateMark(this)"
-               placeholder="—">
+               placeholder="—" ${isDisabled}>
       </td>
       <td>
         <input type="text" class="form-control" style="font-size:0.8125rem"
                value="${s.remarks || ''}"
                data-remarks="${s.student_id}"
-               placeholder="Optional remarks">
+               placeholder="Optional remarks" ${isDisabled}>
       </td>
       <td>${published ? '<span class="badge badge-success">Published</span>' : '<span class="badge badge-secondary">Draft</span>'}</td>
     </tr>`;
@@ -473,7 +486,110 @@ async function publishMarks() {
   return submitAndPublishMarks();
 }
 
+function openBulkMarks() {
+  if (!currentActivity) { Toast.warning('Please select an activity first.'); return; }
+  document.getElementById('form-bulk-marks').reset();
+  document.getElementById('modal-bulk-marks-title').textContent = `Import Marks CSV — ${currentActivity.name}`;
+  Modal.open('modal-bulk-marks');
+}
+
+function downloadMarksTemplate() {
+  if (!currentActivity || !rawStudentsData.length) { Toast.warning('No students loaded.'); return; }
+  let csv = 'usn,marks,remarks\n';
+  rawStudentsData.forEach(s => {
+    csv += `${s.usn},,\n`;
+  });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `marks_template_${currentActivity.name.replace(/\s+/g,'_')}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  Toast.success('Template downloaded.');
+}
+
+async function uploadBulkMarks() {
+  const fileInput = document.getElementById('bulk-marks-file');
+  if (fileInput.files.length === 0) { Toast.error('Please select a CSV file.'); return; }
+  
+  const file = fileInput.files[0];
+  const text = await file.text();
+  const lines = text.trim().split('\n');
+  if (lines.length < 2) { Toast.error('CSV file is empty or has no data rows.'); return; }
+  
+  const headers = lines[0].toLowerCase().split(',').map(h => h.trim());
+  const usnIdx = headers.indexOf('usn');
+  const marksIdx = headers.indexOf('marks');
+  const remarksIdx = headers.indexOf('remarks');
+  
+  if (usnIdx === -1 || marksIdx === -1) {
+    Toast.error('CSV must have "usn" and "marks" columns.');
+    return;
+  }
+  
+  let filled = 0;
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split(',').map(c => c.trim());
+    const usn = cols[usnIdx] || '';
+    const marks = cols[marksIdx] || '';
+    const remarks = remarksIdx !== -1 ? (cols[remarksIdx] || '') : '';
+    
+    if (!usn) continue;
+    
+    const student = rawStudentsData.find(s => s.usn.toLowerCase() === usn.toLowerCase());
+    if (!student) continue;
+    
+    const marksInput = document.querySelector(`[data-student="${student.student_id}"]`);
+    const remarksInput = document.querySelector(`[data-remarks="${student.student_id}"]`);
+    
+    if (marksInput && marks !== '') {
+      marksInput.value = parseFloat(marks);
+      validateMark(marksInput);
+      filled++;
+    }
+    if (remarksInput && remarks !== '') {
+      remarksInput.value = remarks;
+    }
+  }
+  
+  Modal.close('modal-bulk-marks');
+  Toast.success(`Filled marks for ${filled} students from CSV. Click "Save Draft" to persist.`);
+}
+
 document.addEventListener('DOMContentLoaded', init);
 </script>
 
+<!-- Bulk Marks Import Modal -->
+<div class="modal-overlay" id="modal-bulk-marks">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-bulk-marks-title">Import Marks CSV</h3>
+      <button class="modal-close" onclick="Modal.close('modal-bulk-marks')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="text-muted mb-3" style="font-size:0.875rem; line-height:1.5;">
+        Upload a CSV with columns: <code>usn,marks,remarks</code><br>
+        Marks will be filled into the form. You must click <strong>Save Draft</strong> or <strong>Publish</strong> after importing.
+      </p>
+      <div class="mb-3">
+        <button class="btn btn-sm btn-outline-primary" onclick="downloadMarksTemplate()" style="display:inline-flex; align-items:center; gap:6px;">
+          📥 Download Template
+        </button>
+      </div>
+      <form id="form-bulk-marks">
+        <div class="form-group">
+          <label>Choose CSV File *</label>
+          <input type="file" id="bulk-marks-file" accept=".csv" class="form-control" style="padding:10px;">
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="Modal.close('modal-bulk-marks')">Cancel</button>
+      <button class="btn btn-primary" onclick="uploadBulkMarks()">Import & Fill</button>
+    </div>
+  </div>
+</div>
+
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
+

@@ -10,6 +10,7 @@ requireRole(['admin', 'hod']);
     <div class="breadcrumb"><a href="/dashboard.php">Dashboard</a> / Students</div>
   </div>
   <div class="actions">
+    <button class="btn btn-secondary" onclick="openBulkStudent()" style="margin-right: 8px;">📤 Import CSV</button>
     <button class="btn btn-primary" onclick="openAddStudent()">+ Add Student</button>
   </div>
 </div>
@@ -247,7 +248,70 @@ async function deleteStudent(id, name) {
   else Toast.error(res?.message || 'Failed to delete.');
 }
 
+function openBulkStudent() {
+  document.getElementById('form-bulk-students').reset();
+  Modal.open('modal-bulk-students');
+}
+
+async function uploadBulkStudents() {
+  const fileInput = document.getElementById('bulk-student-file');
+  if (fileInput.files.length === 0) {
+    Toast.error('Please select a CSV file.');
+    return;
+  }
+  const file = fileInput.files[0];
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  const btn = document.querySelector('#modal-bulk-students .btn-primary');
+  const oldText = btn.textContent;
+  btn.textContent = 'Importing...';
+  btn.disabled = true;
+  
+  try {
+    const res = await API.upload('/api/bulk_students.php', formData);
+    if (res && res.success) {
+      Toast.success(res.message);
+      Modal.close('modal-bulk-students');
+      loadStudents();
+    } else {
+      Toast.error(res?.message || 'Import failed.');
+    }
+  } catch (err) {
+    Toast.error('An error occurred during upload.');
+  } finally {
+    btn.textContent = oldText;
+    btn.disabled = false;
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => { loadDeptOptions(); loadStudents(); });
 </script>
+
+<!-- Bulk Import Modal -->
+<div class="modal-overlay" id="modal-bulk-students">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Import Students from CSV</h3>
+      <button class="modal-close" onclick="Modal.close('modal-bulk-students')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="text-muted mb-3" style="font-size:0.875rem; line-height:1.4;">
+        Upload a CSV file containing student records. The file must include the following headers in order:
+        <br><code>name,email,usn,prn_number,roll_number,semester,section,department_code,phone</code>
+      </p>
+      <form id="form-bulk-students">
+        <div class="form-group">
+          <label>Choose CSV File *</label>
+          <input type="file" id="bulk-student-file" accept=".csv" class="form-control" style="padding:10px;">
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="Modal.close('modal-bulk-students')">Cancel</button>
+      <button class="btn btn-primary" onclick="uploadBulkStudents()">Upload & Import</button>
+    </div>
+  </div>
+</div>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

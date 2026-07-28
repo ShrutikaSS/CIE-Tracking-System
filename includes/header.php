@@ -31,6 +31,9 @@ $initials = $user ? strtoupper(substr($user['name'], 0, 1) . substr(strrchr($use
   
   <!-- jsPDF + SheetJS for exports -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
+  <script>
+    window.jsPDF = window.jspdf ? window.jspdf.jsPDF : null;
+  </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.4/jspdf.plugin.autotable.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   

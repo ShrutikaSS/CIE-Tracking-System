@@ -110,6 +110,20 @@
         Toast.error(res?.message || 'Failed to change password.');
       }
     }
+
+    // Notification Polling (Every 30s)
+    setInterval(async () => {
+      if (typeof API !== 'undefined' && typeof NotificationPanel !== 'undefined') {
+        const res = await API.get('/api/notifications.php?action=unread_count');
+        if (res && res.success && typeof res.count !== 'undefined') {
+          const badge = document.getElementById('notification-badge');
+          if (badge) {
+            badge.textContent = res.count;
+            badge.style.display = res.count > 0 ? 'inline-block' : 'none';
+          }
+        }
+      }
+    }, 30000);
   </script>
   
   <!-- App JS -->

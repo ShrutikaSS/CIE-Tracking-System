@@ -49,6 +49,49 @@ requireRole(['student']);
     </div>
   </div>
 </div>
+<!-- CIE Forecast Simulator -->
+<div class="card mb-3" id="forecast-card" style="border-left: 4px solid var(--primary);">
+  <div class="card-header" style="flex-wrap:wrap; gap:12px;">
+    <h3 style="display:flex; align-items:center; gap:8px; margin:0;">
+      🎯 CIE Grade Forecast Simulator
+    </h3>
+    <span class="badge badge-info" style="font-size:0.75rem;">Interactive Tool</span>
+  </div>
+  <div class="card-body">
+    <p class="text-muted" style="font-size:0.85rem; margin-bottom:16px;">
+      Enter your <strong>target CIE percentage</strong> to see how many marks you need in your remaining activities.
+    </p>
+    <div class="form-row" style="align-items:flex-end; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
+      <div class="form-group" style="margin-bottom:0; min-width:180px;">
+        <label>Subject</label>
+        <select class="form-control" id="forecast-subject" onchange="runForecast()">
+          <option value="">— Select Subject —</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:0; min-width:120px;">
+        <label>Target CIE %</label>
+        <input type="number" class="form-control" id="forecast-target" value="75" min="0" max="100" step="1" oninput="runForecast()">
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <button class="btn btn-primary btn-sm" onclick="runForecast()">Calculate</button>
+      </div>
+    </div>
+    <div id="forecast-result" style="display:none;">
+      <div style="padding:16px; background:var(--bg-hover); border-radius:10px; border:1px solid var(--border-color);">
+        <div id="forecast-summary" style="font-size:0.9rem; line-height:1.6;"></div>
+        <div id="forecast-bar-container" style="margin-top:12px;">
+          <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted); margin-bottom:4px;">
+            <span>Current Progress</span>
+            <span id="forecast-progress-label">0%</span>
+          </div>
+          <div style="width:100%; height:10px; background:var(--bg-input); border-radius:6px; overflow:hidden;">
+            <div id="forecast-progress-bar" style="height:100%; border-radius:6px; transition:width 0.6s cubic-bezier(0.16,1,0.3,1); background:linear-gradient(90deg, var(--primary), var(--accent));"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- SUBJECT PERFORMANCE ANALYTICS SECTION -->
 <div class="card mb-3" style="padding: 24px;">
@@ -442,7 +485,74 @@ document.addEventListener('DOMContentLoaded', async () => {
   } else {
     document.getElementById('chart-type-perf').parentElement.innerHTML = '<div class="empty-state">No activity performance data available</div>';
   }
+
+  // Populate Forecast Subject Dropdown
+  if (perfRes && perfRes.success && perfRes.subjects) {
+    const fSel = document.getElementById('forecast-subject');
+    fSel.innerHTML = '<option value="">— Select Subject —</option>' +
+      perfRes.subjects.map((s, i) => `<option value="${i}">${s.subject_code} — ${s.subject_name}</option>`).join('');
+    window._forecastSubjects = perfRes.subjects;
+  }
 });
+
+let _forecastSubjects = [];
+
+function runForecast() {
+  const idx = document.getElementById('forecast-subject').value;
+  const targetPct = parseFloat(document.getElementById('forecast-target').value) || 0;
+  const resultDiv = document.getElementById('forecast-result');
+  
+  if (idx === '' || !_forecastSubjects[idx]) { resultDiv.style.display = 'none'; return; }
+  resultDiv.style.display = 'block';
+  
+  const sub = _forecastSubjects[idx];
+  const obtained = parseFloat(sub.total_obtained) || 0;
+  const totalMax = parseFloat(sub.total_max) || 0;
+  const activitiesCompleted = parseInt(sub.activities_completed) || 0;
+  const totalActivities = parseInt(sub.total_activities) || activitiesCompleted;
+  const remaining = totalActivities - activitiesCompleted;
+  
+  const currentPct = totalMax > 0 ? ((obtained / totalMax) * 100) : 0;
+  
+  // Estimate remaining max marks: average max per completed activity * remaining
+  const avgMaxPerActivity = activitiesCompleted > 0 ? (totalMax / activitiesCompleted) : 10;
+  const estimatedRemainingMax = remaining * avgMaxPerActivity;
+  const estimatedTotalMax = totalMax + estimatedRemainingMax;
+  
+  // Target marks needed
+  const targetTotalMarks = (targetPct / 100) * estimatedTotalMax;
+  const neededMarks = Math.max(0, targetTotalMarks - obtained);
+  
+  let summaryHTML = '';
+  summaryHTML += `<strong>${sub.subject_code} — ${sub.subject_name}</strong><br>`;
+  summaryHTML += `📋 Completed: <strong>${activitiesCompleted}</strong> activities | Remaining: <strong>${remaining}</strong><br>`;
+  summaryHTML += `📊 Current: <strong>${obtained.toFixed(1)} / ${totalMax.toFixed(1)}</strong> (${currentPct.toFixed(1)}%)<br>`;
+  
+  if (remaining > 0) {
+    const perActivity = neededMarks / remaining;
+    const achievable = perActivity <= avgMaxPerActivity;
+    
+    if (neededMarks <= 0) {
+      summaryHTML += `<span style="color:var(--success);">✅ You've already met your ${targetPct}% target! Keep it up.</span>`;
+    } else if (achievable) {
+      summaryHTML += `🎯 To reach <strong>${targetPct}%</strong>, you need <strong>${neededMarks.toFixed(1)}</strong> more marks `;
+      summaryHTML += `(~<strong>${perActivity.toFixed(1)}</strong> avg per remaining activity).<br>`;
+      summaryHTML += `<span style="color:var(--success);">✅ This target is achievable.</span>`;
+    } else {
+      summaryHTML += `🎯 To reach <strong>${targetPct}%</strong>, you need <strong>${neededMarks.toFixed(1)}</strong> more marks `;
+      summaryHTML += `(~<strong>${perActivity.toFixed(1)}</strong> avg per remaining activity).<br>`;
+      summaryHTML += `<span style="color:var(--danger);">⚠️ This exceeds the estimated max per activity (~${avgMaxPerActivity.toFixed(0)}). Consider a lower target.</span>`;
+    }
+  } else {
+    summaryHTML += `All activities completed. Final percentage: <strong>${currentPct.toFixed(1)}%</strong>`;
+  }
+  
+  document.getElementById('forecast-summary').innerHTML = summaryHTML;
+  
+  const progressPct = Math.min(100, currentPct);
+  document.getElementById('forecast-progress-bar').style.width = progressPct + '%';
+  document.getElementById('forecast-progress-label').textContent = currentPct.toFixed(1) + '%';
+}
 </script>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

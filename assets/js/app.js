@@ -36,6 +36,9 @@ const API = {
     if (options.headers) {
       merged.headers = { ...defaultOpts.headers, ...options.headers };
     }
+    if (options.body instanceof FormData) {
+      delete merged.headers['Content-Type'];
+    }
 
     try {
       showLoading();
@@ -111,6 +114,17 @@ const API = {
 
   delete(url) {
     return this.request(url, { method: 'DELETE' });
+  },
+
+  upload(url, formData) {
+    return this.request(url, {
+      method: 'POST',
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+        // Do not set Content-Type header here so browser sets multipart/form-data with boundary
+      },
+      body: formData
+    });
   }
 };
 

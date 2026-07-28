@@ -163,7 +163,7 @@ body.sidebar-collapsed .main-wrapper {
   padding: 24px 28px;
   padding-top: calc(var(--header-height) + 24px);
   flex: 1;
-  animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   opacity: 0;
 }
 

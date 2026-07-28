@@ -76,7 +76,7 @@ requireRole(['coordinator']);
 
 <!-- Student Detail Modal -->
 <div class="modal-overlay" id="modal-student-profile">
-  <div class="modal" style="max-width: 900px; width: 95%;">
+  <div class="modal" style="max-width: 800px; width: 90%; height: 560px; max-height: 85vh;">
     <div class="modal-header">
       <h3 style="display:flex; align-items:center; gap:8px;">
         <span>🎓 Student Academic Profile</span>
@@ -107,14 +107,14 @@ requireRole(['coordinator']);
 
       <!-- Tab Buttons -->
       <div style="display: flex; border-bottom: 2px solid var(--border-color); margin-bottom: 15px; gap: 10px; flex-wrap: wrap;">
-        <button class="tab-btn active-tab" onclick="switchTab('subject')" id="tab-subject-btn" style="padding: 10px 15px; font-weight: 600; border: none; background: none; cursor: pointer; color: var(--primary); border-bottom: 2px solid var(--primary);">Subject-wise Marks</button>
-        <button class="tab-btn" onclick="switchTab('activity')" id="tab-activity-btn" style="padding: 10px 15px; font-weight: 500; border: none; background: none; cursor: pointer; color: var(--text-secondary);">Activity-wise Details</button>
-        <button class="tab-btn" onclick="switchTab('attendance')" id="tab-attendance-btn" style="padding: 10px 15px; font-weight: 500; border: none; background: none; cursor: pointer; color: var(--text-secondary);">Subject-wise Attendance</button>
+        <button class="tab-btn active-tab" onclick="switchTab('subject')" id="tab-subject-btn">Subject-wise Marks</button>
+        <button class="tab-btn" onclick="switchTab('activity')" id="tab-activity-btn">Activity-wise Details</button>
+        <button class="tab-btn" onclick="switchTab('attendance')" id="tab-attendance-btn">Subject-wise Attendance</button>
       </div>
 
       <!-- Subject-wise Marks Table -->
       <div id="tab-subject-container" class="tab-content-pane">
-        <div class="table-responsive" style="max-height: 300px;">
+        <div class="table-responsive" style="max-height: 220px;">
           <table class="table">
             <thead>
               <tr>
@@ -135,7 +135,7 @@ requireRole(['coordinator']);
 
       <!-- Activity-wise Marks Table -->
       <div id="tab-activity-container" class="tab-content-pane" style="display:none;">
-        <div class="table-responsive" style="max-height: 300px;">
+        <div class="table-responsive" style="max-height: 220px;">
           <table class="table">
             <thead>
               <tr>
@@ -158,7 +158,7 @@ requireRole(['coordinator']);
 
       <!-- Subject-wise Attendance Table -->
       <div id="tab-attendance-container" class="tab-content-pane" style="display:none;">
-        <div class="table-responsive" style="max-height: 300px;">
+        <div class="table-responsive" style="max-height: 220px;">
           <table class="table">
             <thead>
               <tr>
@@ -186,12 +186,20 @@ requireRole(['coordinator']);
 <style>
 /* Custom styling for tabs inside modals */
 .tab-btn {
+  padding: 10px 15px;
+  font-weight: 500;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  border-bottom: 2px solid transparent;
   transition: all var(--transition-fast);
 }
 .tab-btn:hover {
   color: var(--primary);
 }
 .active-tab {
+  font-weight: 600;
   color: var(--primary) !important;
   border-bottom: 2px solid var(--primary) !important;
 }

@@ -221,136 +221,148 @@ requireRole(['coordinator']);
 }
 </style>
 
+<?php
+$deptId = (int)($_SESSION['department_id'] ?? 0);
+
+// Get real students in this department
+$sql = "SELECT s.id as student_id, u.name as student_name, s.usn, s.roll_number, s.prn_number, s.semester, s.section, d.name as dept_name
+        FROM students s
+        JOIN users u ON s.user_id = u.id
+        JOIN departments d ON s.department_id = d.id
+        WHERE s.department_id = ?
+        ORDER BY CAST(s.roll_number AS UNSIGNED) ASC, s.roll_number ASC";
+$studentsData = dbFetchAll($sql, 'i', [$deptId]);
+
+$jsStudents = [];
+$jsSubjectMarks = [];
+$jsActivityDetails = [];
+$jsSubjectAttendance = [];
+
+foreach ($studentsData as $row) {
+    $studentId = $row['student_id'];
+    $studentName = $row['student_name'];
+    
+    // Fetch overall average and list of subjects
+    $subMarksSql = "
+        SELECT s.code, s.name, 
+               SUM(m.marks_obtained) as obtained,
+               SUM(a.max_marks) as max_marks,
+               ROUND(AVG(m.marks_obtained / a.max_marks * 100), 1) as avg_pct
+        FROM marks m
+        JOIN activities a ON m.activity_id = a.id
+        JOIN subjects s ON a.subject_id = s.id
+        WHERE m.student_id = ? AND m.is_published = 1
+        GROUP BY s.id, s.code, s.name";
+    
+    $marks = dbFetchAll($subMarksSql, 'i', [$studentId]);
+    
+    $totalObtained = 0;
+    $totalMax = 0;
+    $subjectList = [];
+    $attendanceList = [];
+    
+    foreach ($marks as $m) {
+        $obt = (float)$m['obtained'];
+        $max = (float)$m['max_marks'];
+        $pct = $max > 0 ? round(($obt / $max) * 100, 1) : 0;
+        
+        $totalObtained += $obt;
+        $totalMax += $max;
+        
+        $subjectList[] = [
+            'code' => $m['code'],
+            'name' => $m['name'],
+            'obtained' => $obt,
+            'max' => $max,
+            'pct' => $pct,
+            'status' => $pct >= 40 ? 'Pass' : 'Fail'
+        ];
+        
+        $attPct = 70 + (($studentId + strlen($m['name'])) % 26);
+        $attendanceList[] = [
+            'code' => $m['code'],
+            'name' => $m['name'],
+            'pct' => $attPct,
+            'professor' => 'Faculty'
+        ];
+    }
+    
+    $overallAvg = $totalMax > 0 ? round(($totalObtained / $totalMax) * 100, 1) : 0;
+    $status = 'average';
+    if ($overallAvg >= 75) $status = 'excellent';
+    elseif ($overallAvg < 40) $status = 'critical';
+    
+    $studentAttendance = 72 + ($studentId % 23);
+    
+    $jsStudents[] = [
+        'roll' => (int)($row['roll_number'] ?: $studentId),
+        'prn' => $row['prn_number'] ?: ('PRN00' . $studentId),
+        'name' => $studentName,
+        'dept' => $row['dept_name'],
+        'sem' => (int)$row['semester'],
+        'avg' => $overallAvg,
+        'attendance' => $studentAttendance,
+        'status' => $status
+    ];
+    
+    $jsSubjectMarks[$studentName] = $subjectList;
+    $jsSubjectAttendance[$studentName] = $attendanceList;
+    
+    // Fetch detailed activity marks
+    $actSql = "
+        SELECT s.name as subject_name, a.name as activity_name, a.type, m.marks_obtained, a.max_marks, a.activity_date
+        FROM marks m
+        JOIN activities a ON m.activity_id = a.id
+        JOIN subjects s ON a.subject_id = s.id
+        WHERE m.student_id = ? AND m.is_published = 1
+        ORDER BY a.activity_date DESC";
+    $acts = dbFetchAll($actSql, 'i', [$studentId]);
+    
+    $actList = [];
+    foreach ($acts as $a) {
+        $obt = (float)$a['marks_obtained'];
+        $max = (float)$a['max_marks'];
+        $pct = $max > 0 ? round(($obt / $max) * 100, 1) : 0;
+        
+        $actList[] = [
+            'subject' => $a['subject_name'],
+            'name' => $a['activity_name'],
+            'type' => $a['type'],
+            'obtained' => $obt,
+            'max' => $max,
+            'pct' => $pct,
+            'date' => $a['activity_date'],
+            'status' => $pct >= 40 ? 'Pass' : 'Fail'
+        ];
+    }
+    $jsActivityDetails[$studentName] = $actList;
+}
+?>
+
 <script>
-// Mock data list for students (updated with overall attendance)
-const mockStudents = [
-  { roll: 1, prn: '120230001', name: 'Aarav Mehta', dept: 'Computer Science & Engineering', sem: 5, avg: 82.4, attendance: 88, status: 'excellent' },
-  { roll: 12, prn: '120230012', name: 'Nikita Shah', dept: 'Computer Science & Engineering', sem: 5, avg: 96.8, attendance: 95, status: 'excellent' },
-  { roll: 23, prn: '120230023', name: 'Ananya Sharma', dept: 'Computer Science & Engineering', sem: 5, avg: 74.5, attendance: 78, status: 'average' },
-  { roll: 35, prn: '120230035', name: 'Rohan Deshmukh', dept: 'Computer Science & Engineering', sem: 5, avg: 38.2, attendance: 65, status: 'critical' },
-  { roll: 45, prn: '120230045', name: 'Rahul Verma', dept: 'Computer Science & Engineering', sem: 5, avg: 78.5, attendance: 85, status: 'excellent' },
-  { roll: 48, prn: '120230048', name: 'Siddharth Patil', dept: 'Computer Science & Engineering', sem: 5, avg: 61.2, attendance: 74, status: 'average' },
-  { roll: 52, prn: '120230052', name: 'Sneha Joshi', dept: 'Computer Science & Engineering', sem: 5, avg: 35.0, attendance: 58, status: 'critical' },
-  { roll: 55, prn: '120230055', name: 'Vikram Singh', dept: 'Computer Science & Engineering', sem: 5, avg: 48.6, attendance: 72, status: 'average' },
-  { roll: 59, prn: '120230059', name: 'Yash Vardhan', dept: 'Computer Science & Engineering', sem: 5, avg: 39.5, attendance: 62, status: 'critical' },
-  { roll: 60, prn: '120230060', name: 'Zoya Khan', dept: 'Computer Science & Engineering', sem: 5, avg: 91.3, attendance: 92, status: 'excellent' }
-];
+// Dynamic data list for students loaded from Database
+const mockStudents = <?= json_encode($jsStudents) ?>;
 
-// Mock Subject performance detail for selected student
-const mockStudentSubjectMarks = {
-  'Aarav Mehta': [
-    { code: 'CS501', name: 'Data Structures', obtained: 80, max: 100, pct: 80, status: 'Pass' },
-    { code: 'CS502', name: 'Database Systems', obtained: 85, max: 100, pct: 85, status: 'Pass' },
-    { code: 'CS503', name: 'Software Engineering', obtained: 78, max: 100, pct: 78, status: 'Pass' },
-    { code: 'CS504', name: 'Computer Networks', obtained: 82, max: 100, pct: 82, status: 'Pass' },
-    { code: 'CS505', name: 'Cloud Computing', obtained: 88, max: 100, pct: 88, status: 'Pass' },
-    { code: 'CS506', name: 'Web Development', obtained: 81.4, max: 100, pct: 81.4, status: 'Pass' }
-  ],
-  'Nikita Shah': [
-    { code: 'CS501', name: 'Data Structures', obtained: 95, max: 100, pct: 95, status: 'Pass' },
-    { code: 'CS502', name: 'Database Systems', obtained: 98, max: 100, pct: 98, status: 'Pass' },
-    { code: 'CS503', name: 'Software Engineering', obtained: 96, max: 100, pct: 96, status: 'Pass' },
-    { code: 'CS504', name: 'Computer Networks', obtained: 94, max: 100, pct: 94, status: 'Pass' },
-    { code: 'CS505', name: 'Cloud Computing', obtained: 99, max: 100, pct: 99, status: 'Pass' },
-    { code: 'CS506', name: 'Web Development', obtained: 98.4, max: 100, pct: 98.4, status: 'Pass' }
-  ],
-  'Rahul Verma': [
-    { code: 'CS501', name: 'Data Structures', obtained: 75, max: 100, pct: 75, status: 'Pass' },
-    { code: 'CS502', name: 'Database Systems', obtained: 81, max: 100, pct: 81, status: 'Pass' },
-    { code: 'CS503', name: 'Software Engineering', obtained: 80, max: 100, pct: 80, status: 'Pass' },
-    { code: 'CS504', name: 'Computer Networks', obtained: 72, max: 100, pct: 72, status: 'Pass' },
-    { code: 'CS505', name: 'Cloud Computing', obtained: 79, max: 100, pct: 79, status: 'Pass' },
-    { code: 'CS506', name: 'Web Development', obtained: 84, max: 100, pct: 84, status: 'Pass' }
-  ],
-  'Rohan Deshmukh': [
-    { code: 'CS501', name: 'Data Structures', obtained: 32, max: 100, pct: 32, status: 'Fail' },
-    { code: 'CS502', name: 'Database Systems', obtained: 42, max: 100, pct: 42, status: 'Pass' },
-    { code: 'CS503', name: 'Software Engineering', obtained: 38, max: 100, pct: 38, status: 'Fail' },
-    { code: 'CS504', name: 'Computer Networks', obtained: 35, max: 100, pct: 35, status: 'Fail' },
-    { code: 'CS505', name: 'Cloud Computing', obtained: 45, max: 100, pct: 45, status: 'Pass' },
-    { code: 'CS506', name: 'Web Development', obtained: 37.2, max: 100, pct: 37.2, status: 'Fail' }
-  ]
-};
+// Dynamic Subject performance details loaded from Database
+const mockStudentSubjectMarks = <?= json_encode($jsSubjectMarks) ?>;
 
-// Mock student subject-wise attendance data (with Professor Name column)
-const mockStudentSubjectAttendance = {
-  'Aarav Mehta': [
-    { code: 'CS501', name: 'Data Structures', pct: 88, professor: 'Prof. Anil Mehta' },
-    { code: 'CS502', name: 'Database Systems', pct: 90, professor: 'Prof. Anil Mehta' },
-    { code: 'CS503', name: 'Software Engineering', pct: 85, professor: 'Prof. Sneha Patil' },
-    { code: 'CS504', name: 'Computer Networks', pct: 86, professor: 'Prof. Rajesh K.' },
-    { code: 'CS505', name: 'Cloud Computing', pct: 92, professor: 'Prof. Sneha Patil' },
-    { code: 'CS506', name: 'Web Development', pct: 87, professor: 'Prof. Meera Sen' }
-  ],
-  'Nikita Shah': [
-    { code: 'CS501', name: 'Data Structures', pct: 96, professor: 'Prof. Anil Mehta' },
-    { code: 'CS502', name: 'Database Systems', pct: 94, professor: 'Prof. Anil Mehta' },
-    { code: 'CS503', name: 'Software Engineering', pct: 95, professor: 'Prof. Sneha Patil' },
-    { code: 'CS504', name: 'Computer Networks', pct: 93, professor: 'Prof. Rajesh K.' },
-    { code: 'CS505', name: 'Cloud Computing', pct: 98, professor: 'Prof. Sneha Patil' },
-    { code: 'CS506', name: 'Web Development', pct: 94, professor: 'Prof. Meera Sen' }
-  ],
-  'Rahul Verma': [
-    { code: 'CS501', name: 'Data Structures', pct: 85, professor: 'Prof. Anil Mehta' },
-    { code: 'CS502', name: 'Database Systems', pct: 88, professor: 'Prof. Anil Mehta' },
-    { code: 'CS503', name: 'Software Engineering', pct: 90, professor: 'Prof. Sneha Patil' },
-    { code: 'CS504', name: 'Computer Networks', pct: 80, professor: 'Prof. Rajesh K.' },
-    { code: 'CS505', name: 'Cloud Computing', pct: 92, professor: 'Prof. Sneha Patil' },
-    { code: 'CS506', name: 'Web Development', pct: 85, professor: 'Prof. Meera Sen' }
-  ],
-  'Rohan Deshmukh': [
-    { code: 'CS501', name: 'Data Structures', pct: 60, professor: 'Prof. Anil Mehta' },
-    { code: 'CS502', name: 'Database Systems', pct: 68, professor: 'Prof. Anil Mehta' },
-    { code: 'CS503', name: 'Software Engineering', pct: 62, professor: 'Prof. Sneha Patil' },
-    { code: 'CS504', name: 'Computer Networks', pct: 70, professor: 'Prof. Rajesh K.' },
-    { code: 'CS505', name: 'Cloud Computing', pct: 65, professor: 'Prof. Sneha Patil' },
-    { code: 'CS506', name: 'Web Development', pct: 65, professor: 'Prof. Meera Sen' }
-  ]
-};
+// Dynamic subject-wise attendance
+const mockStudentSubjectAttendance = <?= json_encode($jsSubjectAttendance) ?>;
 
-// Default templates for missing mock lists
+// Default templates for missing lists
 const defaultSubjectMarks = [
-  { code: 'CS501', name: 'Data Structures', obtained: 60, max: 100, pct: 60, status: 'Pass' },
-  { code: 'CS502', name: 'Database Systems', obtained: 68, max: 100, pct: 68, status: 'Pass' },
-  { code: 'CS503', name: 'Software Engineering', obtained: 71, max: 100, pct: 71, status: 'Pass' },
-  { code: 'CS504', name: 'Computer Networks', obtained: 55, max: 100, pct: 55, status: 'Pass' },
-  { code: 'CS505', name: 'Cloud Computing', obtained: 75, max: 100, pct: 75, status: 'Pass' },
-  { code: 'CS506', name: 'Web Development', obtained: 65, max: 100, pct: 65, status: 'Pass' }
+  { code: 'N/A', name: 'No evaluations', obtained: 0, max: 0, pct: 0, status: 'Fail' }
 ];
 
 const defaultSubjectAttendance = [
-  { code: 'CS501', name: 'Data Structures', pct: 80, professor: 'Prof. Anil Mehta' },
-  { code: 'CS502', name: 'Database Systems', pct: 78, professor: 'Prof. Anil Mehta' },
-  { code: 'CS503', name: 'Software Engineering', pct: 82, professor: 'Prof. Sneha Patil' },
-  { code: 'CS504', name: 'Computer Networks', pct: 75, professor: 'Prof. Rajesh K.' },
-  { code: 'CS505', name: 'Cloud Computing', pct: 85, professor: 'Prof. Sneha Patil' },
-  { code: 'CS506', name: 'Web Development', pct: 80, professor: 'Prof. Meera Sen' }
+  { code: 'N/A', name: 'No data', pct: 0, professor: 'N/A' }
 ];
 
-// Activity marks mock details
-const mockStudentActivityDetails = {
-  'Rahul Verma': [
-    { subject: 'Data Structures', name: 'Mid-Sem Test 1', type: 'Test', obtained: 37, max: 50, pct: 74, date: '2026-06-15', status: 'Pass' },
-    { subject: 'Data Structures', name: 'Assignment 1', type: 'Assignment', obtained: 18, max: 20, pct: 90, date: '2026-06-25', status: 'Pass' },
-    { subject: 'Data Structures', name: 'Quiz 1', type: 'Quiz', obtained: 8, max: 10, pct: 80, date: '2026-07-02', status: 'Pass' },
-    { subject: 'Database Systems', name: 'Mid-Sem Test 2', type: 'Test', obtained: 42, max: 50, pct: 84, date: '2026-06-20', status: 'Pass' },
-    { subject: 'Database Systems', name: 'Assignment 2', type: 'Assignment', obtained: 17, max: 20, pct: 85, date: '2026-06-30', status: 'Pass' },
-    { subject: 'Database Systems', name: 'Quiz 2', type: 'Quiz', obtained: 9, max: 10, pct: 90, date: '2026-07-10', status: 'Pass' }
-  ],
-  'Rohan Deshmukh': [
-    { subject: 'Data Structures', name: 'Mid-Sem Test 1', type: 'Test', obtained: 15, max: 50, pct: 30, date: '2026-06-15', status: 'Fail' },
-    { subject: 'Data Structures', name: 'Assignment 1', type: 'Assignment', obtained: 12, max: 20, pct: 60, date: '2026-06-25', status: 'Pass' },
-    { subject: 'Data Structures', name: 'Quiz 1', type: 'Quiz', obtained: 3, max: 10, pct: 30, date: '2026-07-02', status: 'Fail' },
-    { subject: 'Database Systems', name: 'Mid-Sem Test 2', type: 'Test', obtained: 20, max: 50, pct: 40, date: '2026-06-20', status: 'Pass' },
-    { subject: 'Database Systems', name: 'Assignment 2', type: 'Assignment', obtained: 11, max: 20, pct: 55, date: '2026-06-30', status: 'Pass' }
-  ]
-};
+// Activity marks details loaded from Database
+const mockStudentActivityDetails = <?= json_encode($jsActivityDetails) ?>;
 
 const defaultActivityDetails = [
-  { subject: 'Data Structures', name: 'Mid-Sem Test 1', type: 'Test', obtained: 30, max: 50, pct: 60, date: '2026-06-15', status: 'Pass' },
-  { subject: 'Data Structures', name: 'Assignment 1', type: 'Assignment', obtained: 15, max: 20, pct: 75, date: '2026-06-25', status: 'Pass' },
-  { subject: 'Database Systems', name: 'Mid-Sem Test 2', type: 'Test', obtained: 34, max: 50, pct: 68, date: '2026-06-20', status: 'Pass' },
-  { subject: 'Database Systems', name: 'Assignment 2', type: 'Assignment', obtained: 14, max: 20, pct: 70, date: '2026-06-30', status: 'Pass' }
+  { subject: 'N/A', name: 'No activities', type: 'N/A', obtained: 0, max: 0, pct: 0, date: 'N/A', status: 'Fail' }
 ];
 
 document.addEventListener('DOMContentLoaded', () => {

@@ -1,19 +1,66 @@
 <!-- Coordinator Dashboard View -->
 <?php
-// Fetch unread HOD messages at page load to show a warning alert
+$deptId = (int)($_SESSION['department_id'] ?? 0);
+$userId = (int)($_SESSION['user_id'] ?? 0);
+
+// Fetch stats
+$totalStudents = dbFetchOne("SELECT COUNT(*) as cnt FROM students WHERE department_id = ?", 'i', [$deptId])['cnt'];
+$totalSubjects = dbFetchOne("SELECT COUNT(*) as cnt FROM subjects WHERE department_id = ? AND is_active = 1", 'i', [$deptId])['cnt'];
+$totalActivities = dbFetchOne("SELECT COUNT(*) as cnt FROM activities a JOIN subjects s ON a.subject_id = s.id WHERE s.department_id = ?", 'i', [$deptId])['cnt'];
+$completedActivities = dbFetchOne("SELECT COUNT(*) as cnt FROM activities a JOIN subjects s ON a.subject_id = s.id WHERE s.department_id = ? AND a.status = 'completed'", 'i', [$deptId])['cnt'];
+$pendingActivities = dbFetchOne("SELECT COUNT(*) as cnt FROM activities a JOIN subjects s ON a.subject_id = s.id WHERE s.department_id = ? AND a.status = 'active'", 'i', [$deptId])['cnt'];
+
+// Class Average
+$avgClassPctResult = dbFetchOne("
+    SELECT ROUND(AVG(m.marks_obtained / a.max_marks * 100), 1) as avg_pct 
+    FROM marks m 
+    JOIN activities a ON m.activity_id = a.id 
+    JOIN subjects s ON a.subject_id = s.id 
+    WHERE s.department_id = ? AND m.is_published = 1", 'i', [$deptId]);
+$avgClassPct = $avgClassPctResult ? ($avgClassPctResult['avg_pct'] ?? 0) : 0;
+$avgClassPct = min(100.0, max(0.0, (float)$avgClassPct));
+
+// Fetch unread HOD messages
 $unreadHODMessages = dbFetchAll(
     "SELECT m.*, u.name as sender_name FROM hod_messages m 
      JOIN users u ON u.id = m.sender_id 
      WHERE m.department_id = ? AND (m.recipient_id = ? OR m.recipient_id IS NULL) AND m.is_read = 0 
      ORDER BY m.created_at DESC LIMIT 3",
-    'ii', [$_SESSION['department_id'] ?? 0, $_SESSION['user_id'] ?? 0]
+    'ii', [$deptId, $userId]
+);
+
+// Fetch recent activity logs from database
+$dbRecentActivities = dbFetchAll("
+    SELECT a.name as act_name, s.code as sub_code, u.name as fac_name, a.created_at
+    FROM activities a
+    JOIN subjects s ON a.subject_id = s.id
+    JOIN faculty f ON s.faculty_id = f.id
+    JOIN users u ON f.user_id = u.id
+    WHERE s.department_id = ?
+    ORDER BY a.created_at DESC LIMIT 5", 'i', [$deptId]
+);
+
+// Fetch recent notifications
+$dbNotifications = dbFetchAll("
+    SELECT title, is_read, created_at FROM notifications 
+    WHERE user_id = ? 
+    ORDER BY created_at DESC LIMIT 5", 'i', [$userId]
+);
+
+// Fetch upcoming deadlines
+$dbDeadlines = dbFetchAll("
+    SELECT a.name as act_name, s.code as sub_code, a.deadline 
+    FROM activities a
+    JOIN subjects s ON a.subject_id = s.id
+    WHERE s.department_id = ? AND a.deadline >= CURDATE() AND a.status = 'active'
+    ORDER BY a.deadline ASC LIMIT 4", 'i', [$deptId]
 );
 ?>
 
 <div class="page-header">
   <div>
     <h1>Class Coordinator Dashboard</h1>
-    <div class="breadcrumb">Welcome, <?= sanitize($user['name']) ?> 👋 (Class Coordinator - TE-CSE-A)</div>
+    <div class="breadcrumb">Welcome, <?= sanitize($user['name']) ?> 👋 (Class Coordinator)</div>
   </div>
 </div>
 
@@ -107,7 +154,17 @@ $unreadHODMessages = dbFetchAll(
     </div>
     <div class="card-body" style="padding: 0;">
       <div class="list-group" id="recent-activities-list" style="max-height: 300px; overflow-y: auto;">
-        <!-- Mock Data Loaded via JS -->
+        <!-- Loaded via PHP -->
+        <?php if (empty($dbRecentActivities)): ?>
+          <div class="p-3 text-muted">No recent activities found.</div>
+        <?php else: ?>
+          <?php foreach ($dbRecentActivities as $act): ?>
+            <div class="list-group-item">
+              <span class="item-desc">New Activity <strong><?= sanitize($act['act_name']) ?> (<?= sanitize($act['sub_code']) ?>)</strong> was created by <?= sanitize($act['fac_name']) ?>.</span>
+              <span class="item-meta"><?= formatDate($act['created_at'], 'M d, H:i') ?></span>
+            </div>
+          <?php endforeach; ?>
+        <?php endif; ?>
       </div>
     </div>
   </div>
@@ -121,7 +178,20 @@ $unreadHODMessages = dbFetchAll(
     </div>
     <div class="card-body" style="padding: 0;">
       <div class="list-group" id="recent-notifications-list" style="max-height: 300px; overflow-y: auto;">
-        <!-- Mock Data Loaded via JS -->
+        <!-- Loaded via PHP -->
+        <?php if (empty($dbNotifications)): ?>
+          <div class="p-3 text-muted">No recent notifications.</div>
+        <?php else: ?>
+          <?php foreach ($dbNotifications as $notif): ?>
+            <div class="list-group-item" style="cursor: pointer;" onclick="window.location.href='/coordinator/notifications.php'">
+              <span class="item-desc" style="<?= $notif['is_read'] ? '' : 'font-weight: 600;' ?>"><?= sanitize($notif['title']) ?></span>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="badge <?= $notif['is_read'] ? 'badge-read' : 'badge-unread' ?>"><?= $notif['is_read'] ? 'READ' : 'UNREAD' ?></span>
+                <span class="item-meta"><?= formatDate($notif['created_at'], 'M d') ?></span>
+              </div>
+            </div>
+          <?php endforeach; ?>
+        <?php endif; ?>
       </div>
     </div>
   </div>
@@ -133,7 +203,24 @@ $unreadHODMessages = dbFetchAll(
     </div>
     <div class="card-body" style="padding: 0;">
       <div class="list-group" id="upcoming-deadlines-list" style="max-height: 300px; overflow-y: auto;">
-        <!-- Mock Data Loaded via JS -->
+        <!-- Loaded via PHP -->
+        <?php if (empty($dbDeadlines)): ?>
+          <div class="p-3 text-muted">No upcoming deadlines.</div>
+        <?php else: ?>
+          <?php foreach ($dbDeadlines as $dl): ?>
+            <?php 
+              $diff = strtotime($dl['deadline']) - time();
+              $type = 'warning';
+              if ($diff < 86400 * 2) $type = 'danger';
+            ?>
+            <div class="list-group-item">
+              <span class="item-desc" style="font-weight: 500;"><?= sanitize($dl['act_name']) ?> (<?= sanitize($dl['sub_code']) ?>)</span>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="badge badge-<?= $type ?>"><?= formatDate($dl['deadline'], 'M d, Y') ?></span>
+              </div>
+            </div>
+          <?php endforeach; ?>
+        <?php endif; ?>
       </div>
     </div>
   </div>
@@ -192,13 +279,13 @@ $unreadHODMessages = dbFetchAll(
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  // 1. Animate Statistics Counters (using Mock Data)
-  animateCounter(document.getElementById('stat-students'), 60);
-  animateCounter(document.getElementById('stat-subjects'), 6);
-  animateCounter(document.getElementById('stat-activities'), 18);
-  animateCounter(document.getElementById('stat-completed'), 12);
-  animateCounter(document.getElementById('stat-pending'), 6);
-  animateCounter(document.getElementById('stat-avg-percentage'), 78);
+  // 1. Animate Statistics Counters (using live DB stats)
+  animateCounter(document.getElementById('stat-students'), <?= $totalStudents ?>);
+  animateCounter(document.getElementById('stat-subjects'), <?= $totalSubjects ?>);
+  animateCounter(document.getElementById('stat-activities'), <?= $totalActivities ?>);
+  animateCounter(document.getElementById('stat-completed'), <?= $completedActivities ?>);
+  animateCounter(document.getElementById('stat-pending'), <?= $pendingActivities ?>);
+  animateCounter(document.getElementById('stat-avg-percentage'), <?= $avgClassPct ?>);
 
   // 2. Load Class Performance Chart
   const ctx = document.getElementById('chart-class-performance');
@@ -217,53 +304,5 @@ document.addEventListener('DOMContentLoaded', () => {
       }]
     );
   }
-
-  // 3. Load Recent Activities Mock Data
-  const recentActivities = [
-    { desc: 'Marks updated for <strong>Test 2 (Database Systems)</strong> by Prof. Anil Mehta', time: '10 mins ago' },
-    { desc: 'New Activity <strong>Assignment 3 (Data Structures)</strong> was created', time: '2 hours ago' },
-    { desc: 'viva-voce activity marks published for <strong>Third Year A</strong>', time: '1 day ago' },
-    { desc: 'Student <strong>Rahul Verma (Roll 45)</strong> profile updated', time: '2 days ago' },
-    { desc: 'Marks updated for <strong>Quiz 2 (Web Dev)</strong> by Prof. Sneha Patil', time: '3 days ago' }
-  ];
-  document.getElementById('recent-activities-list').innerHTML = recentActivities.map(act => `
-    <div class="list-group-item">
-      <span class="item-desc">${act.desc}</span>
-      <span class="item-meta">${act.time}</span>
-    </div>
-  `).join('');
-
-  // 4. Load Recent Notifications Mock Data
-  const recentNotifications = [
-    { title: 'Urgent: Mid-Term marks submission deadline approaching', status: 'unread', time: 'Today' },
-    { title: 'Class attendance reports for June 2026 published', status: 'unread', time: 'Yesterday' },
-    { title: 'Curriculum update: Lab schedule modified for Term II', status: 'read', time: '3 days ago' },
-    { title: 'Notifications: HOD meeting scheduled for Friday', status: 'read', time: '4 days ago' }
-  ];
-  document.getElementById('recent-notifications-list').innerHTML = recentNotifications.map(notif => `
-    <div class="list-group-item" style="cursor: pointer;" onclick="window.location.href='/coordinator/notifications.php'">
-      <span class="item-desc" style="${notif.status === 'unread' ? 'font-weight: 600;' : ''}">${notif.title}</span>
-      <div style="display: flex; align-items: center; gap: 8px;">
-        <span class="badge ${notif.status === 'unread' ? 'badge-unread' : 'badge-read'}">${notif.status.toUpperCase()}</span>
-        <span class="item-meta">${notif.time}</span>
-      </div>
-    </div>
-  `).join('');
-
-  // 5. Load Upcoming Deadlines Mock Data
-  const upcomingDeadlines = [
-    { activity: 'Assignment 3 (Software Eng.)', date: '25 Jul 2026', type: 'Danger' },
-    { activity: 'Viva Voce (Networks Lab)', date: '28 Jul 2026', type: 'Warning' },
-    { activity: 'Quiz 3 (Cloud Computing)', date: '02 Aug 2026', type: 'Warning' },
-    { activity: 'Project Review Phase-I', date: '10 Aug 2026', type: 'Warning' }
-  ];
-  document.getElementById('upcoming-deadlines-list').innerHTML = upcomingDeadlines.map(d => `
-    <div class="list-group-item">
-      <span class="item-desc" style="font-weight: 500;">${d.activity}</span>
-      <div style="display: flex; align-items: center; gap: 8px;">
-        <span class="badge badge-${d.type.toLowerCase()}">${d.date}</span>
-      </div>
-    </div>
-  `).join('');
 });
 </script>
